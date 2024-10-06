@@ -15,17 +15,6 @@ public class ITTaskServiceTest extends ITCommonTest {
 
     ChatClient chatClient;
 
-    // Test to check if the "viewTasks" function is invoked correctly
-    @Test
-    void testViewTasksPrompt() {
-        Prompt prompt = new Prompt("Show the pending tasks");
-        log.info("Prompt: {}", prompt);
-        String content = chatClient.prompt(prompt).call().content();
-        log.info("Content from OpenAI (viewTasks): {}", content);
-        assertThat(content).isNotBlank();
-        assertThat(content).containsIgnoringCase("Tasks displayed");
-    }
-
     // Test to check if the "createTask" function is invoked correctly
     @Test
     void testCreateTaskPrompt() {
@@ -35,6 +24,18 @@ public class ITTaskServiceTest extends ITCommonTest {
         log.info("Content from OpenAI (createTask): {}", content);
         assertThat(content).isNotBlank();
         assertThat(content).containsIgnoringCase("Task created");
+    }
+
+
+    // Test to check if the "viewTasks" function is invoked correctly
+    @Test
+    void testViewTasksPrompt() {
+        Prompt prompt = new Prompt("Show the pending tasks");
+        log.info("Prompt: {}", prompt);
+        String content = chatClient.prompt(prompt).call().content();
+        log.info("Content from OpenAI (viewTasks): {}", content);
+        assertThat(content).isNotBlank();
+        assertThat(content).containsIgnoringCase("Tasks displayed");
     }
 
     // Test to check if the "modifyTask" function is invoked correctly
