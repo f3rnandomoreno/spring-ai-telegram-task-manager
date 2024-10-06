@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Log4j2
-public class ITClientTest {
+public class ITOpenAIClientTest {
 
     @Autowired
     ChatClient chatClient;
