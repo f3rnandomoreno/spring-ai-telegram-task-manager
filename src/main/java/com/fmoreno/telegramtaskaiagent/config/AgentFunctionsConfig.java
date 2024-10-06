@@ -13,26 +13,26 @@ import java.util.function.Function;
 public class AgentFunctionsConfig {
 
     @Bean
-    @Description("Crea una nueva tarea con la descripción y asignación proporcionadas")
-    public Function<TaskService.Request, TaskService.Response> crearTarea(TaskService taskService) {
-        return request -> taskService.apply(new TaskService.Request(TaskService.Action.CREAR, request.taskId(), request.description(), request.assignee()));
+    @Description("Creates a new task with the provided description and assignment")
+    public Function<TaskService.Request, TaskService.Response> createTask(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.CREATE, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Modifica una tarea existente con los nuevos detalles proporcionados")
-    public Function<TaskService.Request, TaskService.Response> modificarTarea(TaskService taskService) {
-        return request -> taskService.apply(new TaskService.Request(TaskService.Action.MODIFICAR, request.taskId(), request.description(), request.assignee()));
+    @Description("Modifies an existing task with the new details provided")
+    public Function<TaskService.Request, TaskService.Response> updateTask(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.UPDATE, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Elimina una tarea existente por su ID")
-    public Function<TaskService.Request, TaskService.Response> eliminarTarea(TaskService taskService) {
-        return request -> taskService.apply(new TaskService.Request(TaskService.Action.ELIMINAR, request.taskId(), request.description(), request.assignee()));
+    @Description("Deletes an existing task by its ID")
+    public Function<TaskService.Request, TaskService.Response> deleteTask(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.DELETE, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Muestra todas las tareas o filtra por criterios específicos")
-    public Function<TaskService.Request, TaskService.Response> verTareas(TaskService taskService) {
-        return request -> taskService.apply(new TaskService.Request(TaskService.Action.VER, request.taskId(), request.description(), request.assignee()));
+    @Description("Displays all tasks or filters by specific criteria")
+    public Function<TaskService.Request, TaskService.Response> viewTasks(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.VIEW, request.taskId(), request.description(), request.assignee()));
     }
 }

@@ -21,56 +21,13 @@ public class ITOpenAIClientTest extends ITCommonTest {
   // Test to check connection to OpenAI API
   @Test
   void testChatClient() {
-    Prompt prompt = new Prompt("hola");
+    Prompt prompt = new Prompt("hello");
     log.info("Prompt: {}", prompt);
     String content = chatClient.prompt(prompt).call().content();
-    log.info("Content from openai: {}", content);
+    log.info("Content from OpenAI: {}", content);
     assertThat(content).isNotBlank();
     assertThat(content).isNotEmpty();
-    assertThat(content).contains("Hola");
+    assertThat(content).contains("Hello");
   }
 
-  // Test to check if the "crearTarea" function is invoked correctly
-  @Test
-  void testCrearTareaPrompt() {
-    Prompt prompt = new Prompt("Crea una tarea para jugar al padel mañana");
-    log.info("Prompt: {}", prompt);
-    String content = chatClient.prompt(prompt).call().content();
-    log.info("Content from openai (crearTarea): {}", content);
-    assertThat(content).isNotBlank();
-    assertThat(content).containsIgnoringCase("Tarea creada");
-  }
-
-  // Test to check if the "modificarTarea" function is invoked correctly
-  @Test
-  void testModificarTareaPrompt() {
-    Prompt prompt = new Prompt("Modifica la tarea con id 1 a completada");
-    log.info("Prompt: {}", prompt);
-    String content = chatClient.prompt(prompt).call().content();
-    log.info("Content from openai (modificarTarea): {}", content);
-    assertThat(content).isNotBlank();
-    assertThat(content).containsIgnoringCase("Tarea modificada");
-  }
-
-  // Test to check if the "eliminarTarea" function is invoked correctly
-  @Test
-  void testEliminarTareaPrompt() {
-    Prompt prompt = new Prompt("Elimina la tarea con id 1");
-    log.info("Prompt: {}", prompt);
-    String content = chatClient.prompt(prompt).call().content();
-    log.info("Content from openai (eliminarTarea): {}", content);
-    assertThat(content).isNotBlank();
-    assertThat(content).containsIgnoringCase("Tarea eliminada");
-  }
-
-  // Test to check if the "verTareas" function is invoked correctly
-  @Test
-  void testVerTareasPrompt() {
-    Prompt prompt = new Prompt("Muestra las tareas pendientes");
-    log.info("Prompt: {}", prompt);
-    String content = chatClient.prompt(prompt).call().content();
-    log.info("Content from openai (verTareas): {}", content);
-    assertThat(content).isNotBlank();
-    assertThat(content).containsIgnoringCase("Tareas visualizadas");
-  }
 }

@@ -15,7 +15,7 @@ public class ChatClientConfig {
         OpenAiChatOptions options = OpenAiChatOptions.builder()
                 .withModel("gpt-4o-mini")
                 .withTemperature(0f)
-                .withFunctions(Set.of("crearTarea", "modificarTarea", "eliminarTarea", "verTareas"))
+                .withFunctions(Set.of("createTask", "updateTask", "deleteTask", "viewTasks"))
                 .build();
         return builder.defaultOptions(options).build();
     }
