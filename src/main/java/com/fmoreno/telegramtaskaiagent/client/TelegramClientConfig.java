@@ -1,6 +1,8 @@
 package com.fmoreno.telegramtaskaiagent.client;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,9 +14,11 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
 
   final TelegramClient telegramClient;
+  final ChatClient chatClient;
 
-  public TelegramClientConfig(String botToken) {
+  public TelegramClientConfig(String botToken, ChatClient chatClient) {
     telegramClient = new OkHttpTelegramClient(botToken);
+    this.chatClient = chatClient;
   }
 
   @Override
@@ -26,11 +30,13 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
 
+      Prompt prompt = new Prompt(message_text);
+
       SendMessage message =
           SendMessage // Create a message object
               .builder()
               .chatId(chat_id)
-              .text(message_text)
+              .text(chatClient.prompt(prompt).call().content())
               .build();
       try {
         telegramClient.execute(message); // Sending our message object to user
