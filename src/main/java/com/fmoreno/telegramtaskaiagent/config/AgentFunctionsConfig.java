@@ -1,11 +1,11 @@
 package com.fmoreno.telegramtaskaiagent.config;
 
+import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 
-import java.util.Map;
 import java.util.function.Function;
 
 @Configuration
@@ -13,39 +13,26 @@ import java.util.function.Function;
 public class AgentFunctionsConfig {
 
     @Bean
-    @Description("Modifica el estado o detalles de una tarea existente.")
-    public Function<Map<String, Object>, String> modificarTarea() {
-        return arguments -> {
-            log.info("Modificando tarea con argumentos: {}", arguments);
-            return "Tarea modificada con éxito.";
-        };
+    @Description("Crea una nueva tarea con la descripción y asignación proporcionadas")
+    public Function<TaskService.Request, TaskService.Response> crearTarea(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.CREAR, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Elimina una tarea existente utilizando su ID o descripción.")
-    public Function<Map<String, Object>, String> eliminarTarea() {
-        return arguments -> {
-            log.info("Eliminando tarea con argumentos: {}", arguments);
-            return "Tarea eliminada con éxito.";
-        };
+    @Description("Modifica una tarea existente con los nuevos detalles proporcionados")
+    public Function<TaskService.Request, TaskService.Response> modificarTarea(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.MODIFICAR, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Crea una nueva tarea con una descripción y opcionalmente asignada a alguien.")
-    public Function<Map<String, Object>, String> crearTarea() {
-        return arguments -> {
-            log.info("Creando tarea con argumentos: {}", arguments);
-            return "Tarea creada con éxito.";
-        };
+    @Description("Elimina una tarea existente por su ID")
+    public Function<TaskService.Request, TaskService.Response> eliminarTarea(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.ELIMINAR, request.taskId(), request.description(), request.assignee()));
     }
 
     @Bean
-    @Description("Recupera y muestra una lista de tareas, opcionalmente filtradas por estado, asignado o un filtro general.")
-    public Function<Map<String, Object>, String> verTareas() {
-        return arguments -> {
-            log.trace("Visualizando tareas con argumentos: {}", arguments);
-            return "Tareas visualizadas con éxito.";
-        };
+    @Description("Muestra todas las tareas o filtra por criterios específicos")
+    public Function<TaskService.Request, TaskService.Response> verTareas(TaskService taskService) {
+        return request -> taskService.apply(new TaskService.Request(TaskService.Action.VER, request.taskId(), request.description(), request.assignee()));
     }
-
 }
