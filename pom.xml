@@ -59,6 +59,11 @@
 		</dependency>
 		<!--Extern-->
 		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-community-dialects</artifactId>
+			<version>6.6.1.Final</version>
+		</dependency>
+		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots-longpolling</artifactId>
 			<version>7.10.0</version>

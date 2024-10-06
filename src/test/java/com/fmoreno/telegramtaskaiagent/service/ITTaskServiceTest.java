@@ -1,15 +1,13 @@
 package com.fmoreno.telegramtaskaiagent.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fmoreno.telegramtaskaiagent.ITCommonTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest
 @Log4j2
 public class ITTaskServiceTest extends ITCommonTest {
 
