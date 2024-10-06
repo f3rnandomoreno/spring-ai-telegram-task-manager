@@ -7,10 +7,12 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Log4j2
 public class ITTaskServiceTest extends ITCommonTest {
 
+    @Autowired
     ChatClient chatClient;
 
     // Test to check if the "createTask" function is invoked correctly
