@@ -14,7 +14,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testCreateTask() {
         String input = "Crear una nueva tarea comprar leche asignada a Juan";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("insert into task"));
         assertTrue(result.toLowerCase().contains("'comprar leche'"));
         assertTrue(result.toLowerCase().contains("'juan'"));
@@ -23,7 +23,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testCreateTaskWithStatus() {
         String input = "Agregar tarea llamar al cliente asignada a María con estado en progreso";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("insert into task"));
         assertTrue(result.toLowerCase().contains("'llamar al cliente'"));
         assertTrue(result.toLowerCase().contains("'maría'"));
@@ -33,14 +33,14 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testReadAllTasks() {
         String input = "Mostrar todas las tareas";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("select * from task"));
     }
 
     @Test
     void testReadTasksWithCondition() {
         String input = "Listar tareas asignadas a Pedro";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("select * from task"));
         assertTrue(result.toLowerCase().contains("where assigned_to = 'pedro'"));
     }
@@ -48,7 +48,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testUpdateTaskStatus() {
         String input = "Actualizar el estado de la tarea 1 a completada";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("update task"));
         assertTrue(result.toLowerCase().contains("set status = 'completada'"));
         assertTrue(result.toLowerCase().contains("where id = 1"));
@@ -57,7 +57,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testUpdateTaskAssignee() {
         String input = "Cambiar la asignación de la tarea 2 a Ana";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("update task"));
         assertTrue(result.toLowerCase().contains("set assigned_to = 'ana'"));
         assertTrue(result.toLowerCase().contains("where id = 2"));
@@ -66,7 +66,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testDeleteTask() {
         String input = "Eliminar la tarea 3";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("delete from task"));
         assertTrue(result.toLowerCase().contains("where id = 3"));
     }
@@ -74,15 +74,15 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testDeleteTasksWithCondition() {
         String input = "Borrar todas las tareas completadas";
-        String result = nl2SQLAgent.processNaturalLanguage(input);
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input);
         assertTrue(result.toLowerCase().contains("delete from task"));
         assertTrue(result.toLowerCase().contains("where status = 'completada'"));
     }
 
     @Test
-    void testProcessSQLGeneration() {
+    void testProcessSQLReview() {
         String sqlQuery = "SELECT * FORM task WHERE status = 'Pendiente'";
-        String result = nl2SQLAgent.processSQLGeneration(sqlQuery);
+        String result = nl2SQLAgent.processSQLReview(sqlQuery);
         assertEquals("SELECT * FROM task WHERE status = 'Pendiente'", result.trim());
     }
 }

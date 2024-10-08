@@ -18,7 +18,7 @@ public class NL2SQLAgent {
     @Autowired
 	private ChatClient chatClient;
 
-	public String processNaturalLanguage(String input) {
+	public String processNaturalLanguageToSQL(String input) {
 		String prompt = "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n" +
 				"La tabla 'task' tiene los siguientes campos:\n" +
 				"- id (INTEGER, clave primaria, autoincremental)\n" +
@@ -32,7 +32,7 @@ public class NL2SQLAgent {
 		return extractSQLString(generateCompletion(prompt));
 	}
 
-	public String processSQLGeneration(String sqlQuery) {
+	public String processSQLReview(String sqlQuery) {
 		String prompt = "Eres un experto en SQL que verifica y corrige consultas SQL para una base de datos de tareas.\n" +
 				"La tabla 'task' tiene los siguientes campos:\n" +
 				"- id (INTEGER, clave primaria, autoincremental)\n" +
