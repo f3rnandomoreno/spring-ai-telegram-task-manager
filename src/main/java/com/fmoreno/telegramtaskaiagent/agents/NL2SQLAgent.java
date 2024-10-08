@@ -1,12 +1,17 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Log4j2
 @Service
 public class NL2SQLAgent {
 
@@ -24,7 +29,7 @@ public class NL2SQLAgent {
 				"Instrucción del usuario: " + input + "\n\n" +
 				"Genera una consulta SQL válida basada en esta instrucción. No incluyas explicaciones, solo la consulta SQL.";
 
-		return generateCompletion(prompt);
+		return extractSQLString(generateCompletion(prompt));
 	}
 
 	public String processSQLGeneration(String sqlQuery) {
@@ -39,16 +44,32 @@ public class NL2SQLAgent {
 				"Verifica que la consulta SQL sea válida y esté bien formada. Si es necesario, corrige la consulta.\n" +
 				"Devuelve solo la consulta SQL corregida, sin explicaciones adicionales.";
 
-		return generateCompletion(prompt);
+		return extractSQLString(generateCompletion(prompt));
 	}
 
 	private String generateCompletion(String promptText) {
+		log.info("Generating completion for prompt: {}", promptText);
 		try {
 			Prompt prompt = new Prompt(promptText);
 			ChatResponse response = chatClient.prompt(prompt).call().chatResponse();
-			return response.getResult().getOutput().getContent();
+			String result = response.getResult().getOutput().getContent();
+			log.info("Generated completion: {}", result);
+			return result;
 		} catch (Exception e) {
+			log.error("Error processing request", e);
 			throw new RuntimeException("Error al procesar la solicitud: " + e.getMessage(), e);
 		}
 	}
+
+	public String extractSQLString(String input) {
+		String regex = "```sql\\s*(.*?)\\s*```";
+		Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(input);
+		if (matcher.find()) {
+			return matcher.group(1).trim();
+		}
+		return null;
+	}
+
+
 }

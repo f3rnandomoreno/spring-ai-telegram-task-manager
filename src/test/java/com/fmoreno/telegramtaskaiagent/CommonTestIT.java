@@ -8,4 +8,4 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest
 @ContextConfiguration(initializers = {DotEnvInitializer.class})
 @ActiveProfiles("test")
-public class ITCommonTest {}
+public class CommonTestIT {}

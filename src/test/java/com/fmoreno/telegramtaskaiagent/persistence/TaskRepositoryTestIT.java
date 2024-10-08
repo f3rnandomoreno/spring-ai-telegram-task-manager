@@ -2,7 +2,7 @@ package com.fmoreno.telegramtaskaiagent.persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.fmoreno.telegramtaskaiagent.ITCommonTest;
+import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.persistence.model.TaskEntity;
 import com.fmoreno.telegramtaskaiagent.persistence.model.TaskStatus;
 import java.util.Optional;
@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class ITTaskRepositoryTest extends ITCommonTest {
+class TaskRepositoryTestIT extends CommonTestIT {
 
   @Autowired private TaskRepository taskRepository;
 
