@@ -1,5 +1,7 @@
 package com.fmoreno.telegramtaskaiagent.client;
 
+import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -15,10 +17,15 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
 
   final TelegramClient telegramClient;
   final ChatClient chatClient;
+  final NL2SQLAgent nl2SQLAgent;
+  final TaskService taskService;
 
-  public TelegramClientConfig(String botToken, ChatClient chatClient) {
+  public TelegramClientConfig(
+      String botToken, ChatClient chatClient, NL2SQLAgent nl2SQLAgent, TaskService taskService) {
     telegramClient = new OkHttpTelegramClient(botToken);
     this.chatClient = chatClient;
+    this.nl2SQLAgent = nl2SQLAgent;
+    this.taskService = taskService;
   }
 
   @Override
@@ -27,6 +34,26 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
     if (update.hasMessage() && update.getMessage().hasText()) {
       log.info("Received message: {}", update.getMessage().getText());
       // Set variables
+      // then we need to get the sql query from the text of the message
+      var sqlQuery = "";
+      sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
+      log.info("SQL Query: {}", sqlQuery);
+      // if there is sql query in the message, we need to execute
+      if (!sqlQuery.isEmpty()) {
+        try {
+          // Assuming there's a service or repository that handles database operations
+          // This is a placeholder for the actual database execution logic
+          // For example, if you have a TaskService with a method executeSQLQuery
+          taskService.executeSQLQuery(sqlQuery);
+          log.info("SQL Query executed successfully: {}", sqlQuery);
+        } catch (Exception e) {
+          log.error("Error executing SQL query: {}", e.getMessage());
+        }
+      }
+      // when it is executed mix the message received with the sql query result and
+      // send to an agent that will process the message and response to the user with the
+      // change done.
+
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
 
@@ -45,5 +72,4 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       }
     }
   }
-
 }
