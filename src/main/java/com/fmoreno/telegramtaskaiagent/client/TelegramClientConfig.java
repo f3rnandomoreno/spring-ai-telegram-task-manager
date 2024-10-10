@@ -15,14 +15,14 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Log4j2
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
 
-  private final TelegramClient telegramClient;
-  private final ChatClient chatClient;
-  private final NL2SQLAgent nl2SQLAgent;
-  private final TaskService taskService;
+  final TelegramClient telegramClient;
+  final ChatClient chatClient;
+  final NL2SQLAgent nl2SQLAgent;
+  final TaskService taskService;
 
   public TelegramClientConfig(
       String botToken, ChatClient chatClient, NL2SQLAgent nl2SQLAgent, TaskService taskService) {
-    this.telegramClient = new OkHttpTelegramClient(botToken);
+    telegramClient = new OkHttpTelegramClient(botToken);
     this.chatClient = chatClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
@@ -31,73 +31,41 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   @Override
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
-      processMessage(update);
-    }
-  }
-
-  private void processMessage(Update update) {
-    try {
       log.info("Received message: {}", update.getMessage().getText());
-
+      
       String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
       log.info("SQL Query: {}", sqlQuery);
+      
+      String executionResult = "";
+      if (!sqlQuery.isEmpty()) {
+        try {
+          executionResult = taskService.executeSQLQuery(sqlQuery);
+          log.info("SQL Query executed successfully: {}", sqlQuery);
+        } catch (Exception e) {
+          log.error("Error executing SQL query: {}", e.getMessage());
+          executionResult = "Error al ejecutar la consulta: " + e.getMessage();
+        }
+      }
 
-      String executionResult = executeSQLQuery(sqlQuery);
+      String message_text = update.getMessage().getText();
+      long chat_id = update.getMessage().getChatId();
 
-      log.info("executionResult: {}", executionResult);
+      String promptText = String.format(
+          "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información.",
+          message_text, sqlQuery, executionResult);
 
-      String promptText = createPromptText(update.getMessage().getText(), sqlQuery, executionResult);
+      Prompt prompt = new Prompt(promptText);
 
-      sendMessageToTelegram(promptText, update.getMessage().getChatId());
+      SendMessage message = SendMessage.builder()
+          .chatId(chat_id)
+          .text(chatClient.prompt(prompt).call().content())
+          .build();
 
-    } catch (Exception e) {
-      handleProcessingError(e, update.getMessage().getChatId());
+      try {
+        telegramClient.execute(message);
+      } catch (TelegramApiException e) {
+        log.error("Error sending message to Telegram", e);
+      }
     }
-  }
-
-  private String executeSQLQuery(String sqlQuery) {
-    if (sqlQuery.isEmpty()) {
-      return "";
-    }
-    try {
-      String result = taskService.executeSQLQuery(sqlQuery);
-      log.info("SQL Query executed successfully: {}", sqlQuery);
-      return result;
-    } catch (Exception e) {
-      log.error("Error executing SQL query: {}", e.getMessage());
-      return "Error al ejecutar la consulta: " + e.getMessage();
-    }
-  }
-
-  private String createPromptText(String messageText, String sqlQuery, String executionResult) {
-    return String.format(
-        "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información.",
-        messageText, sqlQuery, executionResult);
-  }
-
-  private void sendMessageToTelegram(String promptText, long chatId) {
-    Prompt prompt = new Prompt(promptText);
-    SendMessage message = SendMessage.builder()
-        .chatId(chatId)
-        .text(chatClient.prompt(prompt).call().content())
-        .build();
-    try {
-      telegramClient.execute(message);
-    } catch (TelegramApiException e) {
-      log.error("Error sending message to Telegram", e);
-    }
-  }
-
-  private void handleProcessingError(Exception e, long chatId) {
-    SendMessage message = SendMessage.builder()
-        .chatId(chatId)
-        .text("Error processing message")
-        .build();
-    try {
-      telegramClient.execute(message);
-    } catch (TelegramApiException telegramApiException) {
-      log.error("Error sending message to Telegram", telegramApiException);
-    }
-    log.error("Error processing message", e);
   }
 }
