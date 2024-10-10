@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 @Table(name = "tasks")
 public class TaskEntity {
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @NotEmpty private String description;

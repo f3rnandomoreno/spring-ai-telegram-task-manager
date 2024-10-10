@@ -20,12 +20,14 @@ public class NL2SQLAgent {
 
 	public String processNaturalLanguageToSQL(String input) {
 		String prompt = "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n" +
-				"La tabla 'task' tiene los siguientes campos:\n" +
+				"La tabla 'tasks' tiene los siguientes campos:\n" +
 				"- id (INTEGER, clave primaria, autoincremental)\n" +
 				"- description (TEXT)\n" +
-				"- assigned_to (TEXT)\n" +
-				"- status (TEXT, puede ser 'Pendiente', 'En Progreso', 'Bloqueada', o 'Completada')\n" +
+				"- assignee (TEXT)\n" +
+				"- status (TEXT, puede ser 'TODO','BLOCKED','IN_PROGRESS','DONE')\n" +
+				"- last_update_by_user (TEXT)\n" +
 				"- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n" +
+				"- updated_at (DATETIME)\n\n" +
 				"Instrucción del usuario: " + input + "\n\n" +
 				"Genera una consulta SQL válida basada en esta instrucción. No incluyas explicaciones, solo la consulta SQL.";
 
@@ -34,12 +36,14 @@ public class NL2SQLAgent {
 
 	public String processSQLReview(String sqlQuery) {
 		String prompt = "Eres un experto en SQL que verifica y corrige consultas SQL para una base de datos de tareas.\n" +
-				"La tabla 'task' tiene los siguientes campos:\n" +
+				"La tabla 'tasks' tiene los siguientes campos:\n" +
 				"- id (INTEGER, clave primaria, autoincremental)\n" +
 				"- description (TEXT)\n" +
-				"- assigned_to (TEXT)\n" +
+				"- assignee (TEXT)\n" +
 				"- status (TEXT, puede ser 'Pendiente', 'En Progreso', 'Bloqueada', o 'Completada')\n" +
+				"- lastUpdateByUser (TEXT)\n" +
 				"- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n" +
+				"- updated_at (DATETIME)\n\n" +
 				"Consulta SQL a verificar: " + sqlQuery + "\n\n" +
 				"Verifica que la consulta SQL sea válida y esté bien formada. Si es necesario, corrige la consulta.\n" +
 				"Devuelve solo la consulta SQL corregida, sin explicaciones adicionales.";
