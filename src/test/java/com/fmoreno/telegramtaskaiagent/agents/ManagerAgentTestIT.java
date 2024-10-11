@@ -12,6 +12,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+// TODO fix the test with the RelevancyEvaluator
 @Log4j2
 public class ManagerAgentTestIT extends CommonTestIT {
 
