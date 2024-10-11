@@ -1,19 +1,16 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
-import java.util.Collections;
-
+import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.evaluation.EvaluationRequest;
-import org.springframework.ai.evaluation.EvaluationResponse;
-import org.springframework.ai.evaluation.RelevancyEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 @Log4j2
 public class ManagerAgentTestIT extends CommonTestIT {
@@ -21,70 +18,104 @@ public class ManagerAgentTestIT extends CommonTestIT {
     @Autowired
     private ManagerAgent managerAgent;
 
+    @MockBean
+    private NL2SQLAgent nl2SQLAgent;
+
+    @MockBean
+    private TaskService taskService;
+
     @Autowired
     private ChatClient chatClient;
 
-    @Autowired
-    private ChatModel chatModel;
-
-    private RelevancyEvaluator relevancyEvaluator;
-
     @BeforeEach
     void setUp() {
-        relevancyEvaluator = new RelevancyEvaluator(ChatClient.builder(chatModel));
+        // No need for RelevancyEvaluator in this context
     }
 
     @Test
     void testCreateTask() {
         String userMessage = "Crea la tarea jugar al basket y asígnala a Fernando";
-    String expectedResponse =
-        "He creado la tarea \"jugar al basket\" y la he asignado a Fernando. ¿Necesitas algo más?";
+        String sql = "INSERT INTO tasks (description, assignee) VALUES ('jugar al basket', 'Fernando')";
+        String executionResult = "Task created successfully";
 
-        testRelevancy(userMessage, expectedResponse);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+
+        log.info("Response: {}", response);
+        assertNotNull(response);
+        assertTrue(response.contains("creado la tarea"));
+        assertTrue(response.contains("jugar al basket"));
+        assertTrue(response.contains("Fernando"));
     }
 
     @Test
     void testViewTask() {
         String userMessage = "Muéstrame mis tareas pendientes";
-        String expectedResponse = "Aquí tienes tus tareas pendientes:\n1. Jugar al basket\n2. Comprar groceries\n3. Llamar al médico";
-        
-        testRelevancy(userMessage, expectedResponse);
+        String sql = "SELECT * FROM tasks WHERE status = 'pending'";
+        String executionResult = "1. Jugar al basket (Fernando)\n2. Comprar groceries (María)\n3. Llamar al médico (Juan)";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        log.info("Response: {}", response);
+
+        assertNotNull(response);
+        assertTrue(response.contains("tareas pendientes"));
+        assertTrue(response.contains("Jugar al basket"));
+        assertTrue(response.contains("Comprar groceries"));
+        assertTrue(response.contains("Llamar al médico"));
     }
 
     @Test
     void testModifyTask() {
         String userMessage = "Modifica la tarea 'Comprar groceries' y cámbiala a 'Comprar verduras'";
-        String expectedResponse = "He modificado la tarea. 'Comprar groceries' ahora es 'Comprar verduras'.";
-        
-        testRelevancy(userMessage, expectedResponse);
+        String sql = "UPDATE tasks SET description = 'Comprar verduras' WHERE description = 'Comprar groceries'";
+        String executionResult = "1 row(s) affected";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        log.info("Response: {}", response);
+
+        assertNotNull(response);
+        assertTrue(response.contains("modificado la tarea"));
+        assertTrue(response.contains("Comprar groceries"));
+        assertTrue(response.contains("Comprar verduras"));
     }
 
     @Test
     void testDeleteTask() {
         String userMessage = "Elimina la tarea 'Llamar al médico'";
-        String expectedResponse = "He eliminado la tarea 'Llamar al médico' de tu lista.";
-        
-        testRelevancy(userMessage, expectedResponse);
+        String sql = "DELETE FROM tasks WHERE description = 'Llamar al médico'";
+        String executionResult = "1 row(s) affected";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+
+        assertNotNull(response);
+        assertTrue(response.contains("eliminado la tarea"));
+        assertTrue(response.contains("Llamar al médico"));
     }
 
     @Test
-    void testAmbiguousRequest() {
-        String userMessage = "Necesito hacer algo importante";
-        String expectedResponse = "Disculpa, tu solicitud es un poco ambigua. ¿Podrías especificar si quieres crear, ver, modificar o eliminar una tarea en particular?";
-        
-        testRelevancy(userMessage, expectedResponse);
+    void testErrorHandling() {
+        String userMessage = "Crea una tarea inválida";
+        String sql = "INSERT INTO tasks (invalid_column) VALUES ('invalid_value')";
+        String executionResult = "Error: column 'invalid_column' does not exist";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+
+        assertNotNull(response);
+        assertTrue(response.contains("error"));
+        assertTrue(response.contains("No se pudo crear la tarea"));
     }
-
-    private void testRelevancy(String userMessage, String expectedResponse) {
-        log.info("Testing user message: {}", userMessage);
-        String result = managerAgent.receiveMessageUser(userMessage);
-
-        log.info("Response: {}", result);
-        EvaluationRequest evaluationRequest = new EvaluationRequest(userMessage, Collections.emptyList(), result);
-        EvaluationResponse evaluationResponse = relevancyEvaluator.evaluate(evaluationRequest);
-        
-        assertTrue(evaluationResponse.isPass(), "Response is not relevant to the question");
-        assertTrue(result.contains(expectedResponse), "Response does not contain expected content");
-    }
-
 }

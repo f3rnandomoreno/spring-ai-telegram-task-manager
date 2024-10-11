@@ -13,16 +13,13 @@ public class ManagerAgent {
 
     final private ChatClient chatClient;
 
-    public String receiveMessageUser(String message) {
-        String promptMessage="""
-            Eres un asistente de gestión de tareas. Interpretas cuando un usuario quiere
-            crear, ver, modificar o eliminar tareas. Identificas la tarea que hace falta cuando
-            te dicen lo que necesitan en una frase corta. Por ejemplo "Crea la tarea jugar al basket
-            y asígnala a Fernando".
-            Mensaje usuario: %s
-            """.formatted(message);
+    public String receiveMessageUser(String message_text, String sqlQuery, String executionResult) {
+        String promptText =
+                String.format(
+                        "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información.",
+                        message_text, sqlQuery, executionResult);
     return chatClient
-        .prompt(new Prompt(promptMessage))
+        .prompt(new Prompt(promptText))
         .call()
         .chatResponse()
         .getResult()

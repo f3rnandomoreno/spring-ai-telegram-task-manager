@@ -1,10 +1,10 @@
 package com.fmoreno.telegramtaskaiagent.client;
 
+import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -19,23 +19,29 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   final ChatClient chatClient;
   final NL2SQLAgent nl2SQLAgent;
   final TaskService taskService;
+  final ManagerAgent managerAgent;
 
   public TelegramClientConfig(
-      String botToken, ChatClient chatClient, NL2SQLAgent nl2SQLAgent, TaskService taskService) {
+      String botToken,
+      ChatClient chatClient,
+      NL2SQLAgent nl2SQLAgent,
+      TaskService taskService,
+      ManagerAgent managerAgent) {
     telegramClient = new OkHttpTelegramClient(botToken);
     this.chatClient = chatClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
+    this.managerAgent = managerAgent;
   }
 
   @Override
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
       log.info("Received message: {}", update.getMessage().getText());
-      
+
       String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
       log.info("SQL Query: {}", sqlQuery);
-      
+
       String executionResult = "";
       if (!sqlQuery.isEmpty()) {
         try {
@@ -49,17 +55,8 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
 
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
-
-      String promptText = String.format(
-          "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información.",
-          message_text, sqlQuery, executionResult);
-
-      Prompt prompt = new Prompt(promptText);
-
-      SendMessage message = SendMessage.builder()
-          .chatId(chat_id)
-          .text(chatClient.prompt(prompt).call().content())
-          .build();
+      var chatResponse = managerAgent.receiveMessageUser(message_text, sqlQuery, executionResult);
+      SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
 
       try {
         telegramClient.execute(message);
