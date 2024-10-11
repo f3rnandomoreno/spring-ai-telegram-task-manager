@@ -5,18 +5,16 @@ import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Set;
-
 @Configuration
 public class ChatClientConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .withModel("gpt-4o-mini")
-                .withTemperature(0f)
-//                .withFunctions(Set.of("createTask", "updateTask", "deleteTask", "viewTasks"))
-                .build();
+    OpenAiChatOptions options =
+        OpenAiChatOptions.builder()
+            .withModel("gpt-4o-mini")
+            .withTemperature(0.0)
+            .build();
         return builder.defaultOptions(options).build();
     }
 }
