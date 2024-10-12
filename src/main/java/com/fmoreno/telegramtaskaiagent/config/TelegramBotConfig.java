@@ -33,7 +33,8 @@ public class TelegramBotConfig {
     try {
       TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
       botsApplication.registerBot(
-          botToken, new TelegramClientConfig(botToken, chatClient, nl2SQLAgent, taskService,managerAgent));
+          botToken,
+          new TelegramClientConfig(botToken, chatClient, nl2SQLAgent, taskService, managerAgent));
       log.trace("Bot registered successfully");
     } catch (TelegramApiException e) {
       e.printStackTrace();

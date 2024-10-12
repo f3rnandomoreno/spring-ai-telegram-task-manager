@@ -1,0 +1,5 @@
+- cuando se le pide ver las tareas al chatbot a veces el chatbot se queda pillado al mostrar los resultados de las tareas con su sql information.
+- chatbot puede asignar tareas a los usuarios independientemente de si está escrito en mayúsculas o minúsculas.
+- chatbot muestra siempre los ids de las tareas
+- chatbot muestra de forma elegante y simplificada las tareas
+- chatbot muestra todas las tareas siempre que hace una modificación en ellas
