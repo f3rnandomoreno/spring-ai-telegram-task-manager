@@ -10,6 +10,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -34,7 +35,7 @@ public class TelegramBotConfig {
       TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
       botsApplication.registerBot(
           botToken,
-          new TelegramClientConfig(botToken, chatClient, nl2SQLAgent, taskService, managerAgent));
+          new TelegramClientConfig(new OkHttpTelegramClient(botToken), chatClient, nl2SQLAgent, taskService, managerAgent));
       log.trace("Bot registered successfully");
     } catch (TelegramApiException e) {
       e.printStackTrace();

@@ -22,12 +22,12 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   final ManagerAgent managerAgent;
 
   public TelegramClientConfig(
-      String botToken,
+      TelegramClient telegramClient,
       ChatClient chatClient,
       NL2SQLAgent nl2SQLAgent,
       TaskService taskService,
       ManagerAgent managerAgent) {
-    telegramClient = new OkHttpTelegramClient(botToken);
+    this.telegramClient = telegramClient;
     this.chatClient = chatClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;

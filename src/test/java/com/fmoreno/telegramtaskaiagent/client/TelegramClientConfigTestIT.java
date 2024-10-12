@@ -5,9 +5,6 @@ import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
-
-import static org.mockito.Mockito.doAnswer;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -15,66 +12,67 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 class TelegramClientConfigTestIT extends CommonTestIT {
 
-   private final String botToken;
-   private final ChatClient chatClient;
-   private final NL2SQLAgent nl2SQLAgent;
-   private final TaskService taskService;
-   private final ManagerAgent managerAgent;
-   private TelegramClientConfig telegramClientConfig;
-   @SpyBean private TelegramClient telegramClient;
+    @Value("${telegram.bot.token}")
+    private String botToken;
 
-   @Autowired
-   public TelegramClientConfigTestIT(
-       @Value("${telegram.bot.token}") String botToken,
-       ChatClient chatClient,
-       NL2SQLAgent nl2SQLAgent,
-       TaskService taskService,
-       ManagerAgent managerAgent) {
-       this.botToken = botToken;
-       this.chatClient = chatClient;
-       this.nl2SQLAgent = nl2SQLAgent;
-       this.taskService = taskService;
-       this.managerAgent = managerAgent;
-   }
+    @Autowired
+    private ChatClient chatClient;
 
-   @PostConstruct
-   public void init() {
-       telegramClientConfig = new TelegramClientConfig(botToken, chatClient, nl2SQLAgent, taskService, managerAgent);
-   }
+    @Autowired
+    private NL2SQLAgent nl2SQLAgent;
 
-   // test message to see the task list
-   @Test
-   void testGetTaskList() throws TelegramApiException {
-       // given
-       String message = "dame la lista de tareas";
-       Update update = new Update();
-       Message telegramMessage = new Message();
-       telegramMessage.setText(message);
-       telegramMessage.setChat(new Chat(9L, "private"));
-       update.setMessage(telegramMessage);
+    @Autowired
+    private TaskService taskService;
 
-       // when telegramClient.execute() is called get the argument to check the message
-       ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-       doAnswer(invocation -> {
-           return "";
-       }).when(telegramClient).execute(argumentCaptor.capture());
+    @Autowired
+    private ManagerAgent managerAgent;
 
-       // when
-       telegramClientConfig.consume(update);
+//    @Autowired
+    @MockBean
+    private TelegramClient telegramClient;
 
-       // then
-       SendMessage capturedMessage = argumentCaptor.getValue();
-       Assertions.assertThat(capturedMessage.getText()).isEqualTo(message);
-       Assertions.assertThat(capturedMessage).isNotNull();
-   }
+    private TelegramClientConfig telegramClientConfig;
+
+    @PostConstruct
+    public void init() {
+        telegramClientConfig = new TelegramClientConfig(telegramClient, chatClient, nl2SQLAgent, taskService, managerAgent);
+    }
+
+    @Test
+    void testGetTaskList() throws Exception {
+        // Dado
+        String message = "Aquí tienes la lista de tareas";
+        Update update = new Update();
+        Message telegramMessage = new Message();
+        telegramMessage.setText(message);
+        telegramMessage.setChat(new Chat(9L, "private"));
+        update.setMessage(telegramMessage);
+
+        // Capturar el mensaje enviado por telegramClient.execute()
+        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
+        // Usar un spy para capturar la llamada real
+        org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
+
+        // Cuando
+        telegramClientConfig.consume(update);
+
+        // Entonces
+        SendMessage capturedMessage = argumentCaptor.getValue();
+        Assertions.assertThat(capturedMessage).isNotNull();
+
+        // Puedes imprimir el mensaje capturado para verificar su contenido
+        System.out.println("Mensaje capturado: " + capturedMessage.getText());
+
+        // Asegúrate de que el texto del mensaje es el esperado
+        String expectedResponse = "Aquí está la lista de tareas: ..."; // Reemplaza con la respuesta esperada real
+        Assertions.assertThat(capturedMessage.getText()).isEqualTo(expectedResponse);
+    }
 }
