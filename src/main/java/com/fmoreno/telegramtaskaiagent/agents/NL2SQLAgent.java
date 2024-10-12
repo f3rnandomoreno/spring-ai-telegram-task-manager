@@ -1,24 +1,28 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Log4j2
 @Service
 public class NL2SQLAgent {
 
-    @Autowired
-	private ChatClient chatClient;
 
-	public String processNaturalLanguageToSQL(String input) {
+	final private ChatClient chatClient;
+
+    public NL2SQLAgent(@Qualifier("sqlChatClient") ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
+
+
+    public String processNaturalLanguageToSQL(String input) {
 		String prompt = "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n" +
 				"La tabla 'tasks' tiene los siguientes campos:\n" +
 				"- id (INTEGER, clave primaria, autoincremental)\n" +

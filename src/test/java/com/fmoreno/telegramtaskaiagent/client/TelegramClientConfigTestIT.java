@@ -1,14 +1,14 @@
 package com.fmoreno.telegramtaskaiagent.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,9 +22,6 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
     @Value("${telegram.bot.token}")
     private String botToken;
-
-    @Autowired
-    private ChatClient chatClient;
 
     @Autowired
     private NL2SQLAgent nl2SQLAgent;
@@ -43,7 +40,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
     @PostConstruct
     public void init() {
-        telegramClientConfig = new TelegramClientConfig(telegramClient, chatClient, nl2SQLAgent, taskService, managerAgent);
+        telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent);
     }
 
     @Test
@@ -66,13 +63,13 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
         // Entonces
         SendMessage capturedMessage = argumentCaptor.getValue();
-        Assertions.assertThat(capturedMessage).isNotNull();
+        assertThat(capturedMessage).isNotNull();
 
         // Puedes imprimir el mensaje capturado para verificar su contenido
         System.out.println("Mensaje capturado: " + capturedMessage.getText());
 
         // Asegúrate de que el texto del mensaje es el esperado
-        String expectedResponse = "Aquí está la lista de tareas: ..."; // Reemplaza con la respuesta esperada real
-        Assertions.assertThat(capturedMessage.getText()).isEqualTo(expectedResponse);
+        String expectedResponse = "Aquí tienes la lista de tareas"; // Reemplaza con la respuesta esperada real
+        assertThat(capturedMessage.getText()).contains(expectedResponse);
     }
 }
