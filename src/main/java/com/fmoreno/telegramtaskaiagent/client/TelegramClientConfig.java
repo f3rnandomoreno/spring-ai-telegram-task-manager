@@ -89,7 +89,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
       String userName = update.getMessage().getFrom().getFirstName();
-      if (userName.isEmpty()) {
+      if (userName == null || userName.isEmpty()) {
         userName = update.getMessage().getFrom().getUserName();
       }
 
