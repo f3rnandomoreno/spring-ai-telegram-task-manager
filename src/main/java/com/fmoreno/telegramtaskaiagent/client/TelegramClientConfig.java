@@ -60,7 +60,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       long chat_id = update.getMessage().getChatId();
       // get the userId from the update
 
-      var chatResponse = managerAgent.receiveMessageUser(message_text, sqlQuery, executionResult);
+      var chatResponse = managerAgent.processUserMessage(message_text, sqlQuery, executionResult);
       SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
 
       try {
