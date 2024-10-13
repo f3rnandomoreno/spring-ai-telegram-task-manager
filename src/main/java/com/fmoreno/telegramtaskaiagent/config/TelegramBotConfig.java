@@ -3,6 +3,7 @@ package com.fmoreno.telegramtaskaiagent.config;
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.client.TelegramClientConfig;
+import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -26,13 +27,15 @@ public class TelegramBotConfig {
 
   @Autowired ManagerAgent managerAgent;
 
+  @Autowired UserRepository userRepository;
+
   @PostConstruct
   public void init() {
     try {
       TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
       botsApplication.registerBot(
           botToken,
-          new TelegramClientConfig(new OkHttpTelegramClient(botToken), nl2SQLAgent, taskService, managerAgent));
+          new TelegramClientConfig(new OkHttpTelegramClient(botToken), nl2SQLAgent, taskService, managerAgent, userRepository));
       log.trace("Bot registered successfully");
     } catch (TelegramApiException e) {
       e.printStackTrace();
