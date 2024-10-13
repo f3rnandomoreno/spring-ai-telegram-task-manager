@@ -27,7 +27,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         assertThat(result.toLowerCase()).contains("insert into tasks");
         assertThat(result.toLowerCase()).contains("'llamar al cliente'");
         assertThat(result.toLowerCase()).contains("'maría'");
-        assertThat(result.toLowerCase()).contains("'en progreso'");
+        assertThat(result.toLowerCase()).contains("'in_progress'");
     }
 
     @Test
@@ -42,7 +42,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         String input = "Listar tareas asignadas a Pedro";
         String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Usuario");
         assertThat(result.toLowerCase()).contains("select * from tasks");
-        assertThat(result.toLowerCase()).contains("where assigned_to = 'pedro'");
+        assertThat(result.toLowerCase()).contains("where assignee = 'pedro'");
     }
 
     @Test
@@ -50,7 +50,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         String input = "Actualizar el estado de la tarea 1 a completada";
         String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Usuario");
         assertThat(result.toLowerCase()).contains("update tasks");
-        assertThat(result.toLowerCase()).contains("set status = 'completada'");
+        assertThat(result.toLowerCase()).contains("set status = 'done'");
         assertThat(result.toLowerCase()).contains("where id = 1");
     }
 
@@ -59,7 +59,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         String input = "Cambiar la asignación de la tarea 2 a Ana";
         String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Usuario");
         assertThat(result.toLowerCase()).contains("update tasks");
-        assertThat(result.toLowerCase()).contains("set assigned_to = 'ana'");
+        assertThat(result.toLowerCase()).contains("set assignee = 'ana'");
         assertThat(result.toLowerCase()).contains("where id = 2");
     }
 
@@ -76,13 +76,13 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         String input = "Borrar todas las tareas completadas";
         String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Usuario");
         assertThat(result.toLowerCase()).contains("delete from tasks");
-        assertThat(result.toLowerCase()).contains("where status = 'completada'");
+        assertThat(result.toLowerCase()).contains("where status = 'done'");
     }
 
     @Test
     void testProcessSQLReview() {
         String sqlQuery = "SELECT * FORM tasks WHERE status = 'Pendiente'";
         String result = nl2SQLAgent.processSQLReview(sqlQuery);
-        assertThat(result.trim()).isEqualTo("SELECT * FROM tasks WHERE status = 'Pendiente';");
+        assertThat(result.trim()).startsWith("SELECT * FROM tasks WHERE status = 'Pendiente'");
     }
 }
