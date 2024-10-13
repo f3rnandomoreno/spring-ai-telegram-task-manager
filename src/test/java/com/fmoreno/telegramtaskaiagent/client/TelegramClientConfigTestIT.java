@@ -18,6 +18,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.message.MessageEntity;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Optional;
@@ -57,6 +59,9 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         Message telegramMessage = new Message();
         telegramMessage.setText(message);
         telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User();
+        user.setId(1L);
+        telegramMessage.setFrom(user);
         update.setMessage(telegramMessage);
 
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
@@ -86,6 +91,9 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         Message telegramMessage = new Message();
         telegramMessage.setText(email);
         telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User();
+        user.setId(1L);
+        telegramMessage.setFrom(user);
         update.setMessage(telegramMessage);
 
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
@@ -111,6 +119,9 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         Message telegramMessage = new Message();
         telegramMessage.setText(email);
         telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User();
+        user.setId(1L);
+        telegramMessage.setFrom(user);
         update.setMessage(telegramMessage);
 
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
@@ -136,6 +147,9 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         Message initialTelegramMessage = new Message();
         initialTelegramMessage.setText(initialMessage);
         initialTelegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User();
+        user.setId(1L);
+        initialTelegramMessage.setFrom(user);
         initialUpdate.setMessage(initialTelegramMessage);
 
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
@@ -158,6 +172,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         Message allowedTelegramMessage = new Message();
         allowedTelegramMessage.setText(allowedEmail);
         allowedTelegramMessage.setChat(new Chat(9L, "private"));
+        allowedTelegramMessage.setFrom(user);
         allowedUpdate.setMessage(allowedTelegramMessage);
 
         // when
