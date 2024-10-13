@@ -16,6 +16,11 @@ public class ManagerAgent {
   }
 
   public String processUserMessage(String messageText, String sqlQuery, String executionResult, String userName) {
+    String responseMessage = generateResponseMessage(sqlQuery, executionResult);
+    if (responseMessage != null) {
+      return responseMessage;
+    }
+
     String promptText = buildPrompt(messageText, sqlQuery, executionResult, userName);
     log.info("Prompt text: {}", promptText);
     return generateResponse(promptText);
@@ -58,5 +63,17 @@ public class ManagerAgent {
         .getResult()
         .getOutput()
         .getContent();
+  }
+
+  private String generateResponseMessage(String sqlQuery, String executionResult) {
+    String lowerCaseQuery = sqlQuery.toLowerCase().trim();
+    if (lowerCaseQuery.startsWith("insert")) {
+      return "Tarea creada correctamente.";
+    } else if (lowerCaseQuery.startsWith("update")) {
+      return "Tarea modificada correctamente.";
+    } else if (lowerCaseQuery.startsWith("delete")) {
+      return "Tarea eliminada correctamente.";
+    }
+    return null;
   }
 }

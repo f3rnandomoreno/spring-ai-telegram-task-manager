@@ -12,7 +12,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-// TODO fix the test with the RelevancyEvaluator
 @Log4j2
 public class ManagerAgentTestIT extends CommonTestIT {
 
@@ -46,9 +45,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
 
         log.info("Response: {}", response);
         assertNotNull(response);
-        assertTrue(response.contains("creado la tarea"));
-        assertTrue(response.contains("jugar al basket"));
-        assertTrue(response.contains("Fernando"));
+        assertEquals("Tarea creada correctamente.", response);
     }
 
     @Test
@@ -83,9 +80,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         log.info("Response: {}", response);
 
         assertNotNull(response);
-        assertTrue(response.contains("modificado la tarea"));
-        assertTrue(response.contains("Comprar groceries"));
-        assertTrue(response.contains("Comprar verduras"));
+        assertEquals("Tarea modificada correctamente.", response);
     }
 
     @Test
@@ -100,8 +95,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         assertNotNull(response);
-        assertTrue(response.contains("eliminado la tarea"));
-        assertTrue(response.contains("Llamar al médico"));
+        assertEquals("Tarea eliminada correctamente.", response);
     }
 
     @Test
@@ -116,7 +110,6 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         assertNotNull(response);
-        assertTrue(response.contains("error"));
-        assertTrue(response.contains("No se pudo crear la tarea"));
+        assertTrue(response.contains("Error al ejecutar la consulta"));
     }
 }
