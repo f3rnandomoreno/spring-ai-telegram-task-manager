@@ -43,6 +43,8 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
       Long userId = update.getMessage().getFrom().getId();
+      long chat_id = update.getMessage().getChatId();
+      String userName = update.getMessage().getFrom().getFirstName();
       Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
 
       if (userEntityOptional.isEmpty()) {
@@ -69,10 +71,12 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
         return;
       }
 
-      UserEntity userEntity = userEntityOptional.get();
+      if (userName.isEmpty()) {
+        userName = update.getMessage().getFrom().getUserName();
+      }
       log.info("Received message from {}: {}", userId, update.getMessage().getText());
 
-      String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
+      String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText(), userName);
       log.info("SQL Query: {}", sqlQuery);
 
       String executionResult = "";
@@ -87,11 +91,6 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       }
 
       String message_text = update.getMessage().getText();
-      long chat_id = update.getMessage().getChatId();
-      String userName = update.getMessage().getFrom().getFirstName();
-      if (userName.isEmpty()) {
-        userName = update.getMessage().getFrom().getUserName();
-      }
 
       var chatResponse =
           managerAgent.processUserMessage(message_text, sqlQuery, executionResult, userName);

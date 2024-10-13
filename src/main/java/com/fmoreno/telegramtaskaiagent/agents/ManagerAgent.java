@@ -28,19 +28,20 @@ public class ManagerAgent {
 
   private String buildPrompt(String messageText, String sqlQuery, String executionResult, String userName) {
     return String.format("""
-        Nombre del usuario: %s
+        ¡Hola %s!
 
-        Mensaje del usuario:         ```
+        He recibido tu mensaje:         ```
         %s        ```
 
-        Consulta SQL generada:         ```
+        Aquí está la consulta SQL que he generado:         ```
         %s        ```
 
-        Resultado de la ejecución:         ```
+        Y este es el resultado de la ejecución:         ```
         %s        ```
+
         Instrucciones:
         1. Proporciona una respuesta amigable al usuario basada en esta información, utilizando su nombre `%s` para personalizar la respuesta y las consultas.
-        2. Lista las tareas en un formato simplificado, siguiendo este patrón:
+         2. Lista las tareas en un formato simplificado, siguiendo este patrón:
            *Tarea [ID]*: [Descripción] - [Estado] - ([Asignada a]) (Última actualización por: [Usuario])
         3. El estado debe mostrarse en español: "Pendiente" para TODO, "En Progreso" para IN_PROGRESS, "Completada" para DONE.
         4. Incluye la fecha de última actualización solo si está disponible en el resultado de la ejecución, al final de la línea entre paréntesis.

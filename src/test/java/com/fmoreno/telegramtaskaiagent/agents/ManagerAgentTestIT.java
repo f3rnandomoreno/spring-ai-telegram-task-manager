@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
@@ -38,7 +39,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String sql = "INSERT INTO tasks (description, assignee) VALUES ('jugar al basket', 'Fernando')";
         String executionResult = "Task created successfully";
 
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
@@ -52,9 +53,12 @@ public class ManagerAgentTestIT extends CommonTestIT {
     void testViewTask() {
         String userMessage = "Muéstrame mis tareas pendientes";
         String sql = "SELECT * FROM tasks WHERE status = 'pending'";
-        String executionResult = "1. Jugar al basket (Fernando)\n2. Comprar groceries (María)\n3. Llamar al médico (Juan)";
+        String executionResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando) (Última actualización por: Claudia)\n" +
+                "*Tarea 2*: Comprar groceries - Pendiente - (María) (Última actualización por: Claudia)\n" +
+                "*Tarea 3*: Llamar al médico - Pendiente - (Juan) (Última actualización por: Claudia)";
 
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
@@ -73,7 +77,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String sql = "UPDATE tasks SET description = 'Comprar verduras' WHERE description = 'Comprar groceries'";
         String executionResult = "1 row(s) affected";
 
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
@@ -89,7 +93,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String sql = "DELETE FROM tasks WHERE description = 'Llamar al médico'";
         String executionResult = "1 row(s) affected";
 
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
@@ -98,18 +102,60 @@ public class ManagerAgentTestIT extends CommonTestIT {
         assertEquals("Tarea eliminada correctamente.", response);
     }
 
+    // TODO (fix this test)
     @Test
     void testErrorHandling() {
         String userMessage = "Crea una tarea inválida";
         String sql = "INSERT INTO tasks (invalid_column) VALUES ('invalid_value')";
         String executionResult = "Error: column 'invalid_column' does not exist";
 
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         assertNotNull(response);
-        assertTrue(response.contains("Error al ejecutar la consulta"));
+        Assertions.assertThat(response).contains("Error al ejecutar la consulta");
+    }
+
+    @Test
+    void testPersonalizedResponse() {
+        String userMessage = "Muéstrame mis tareas";
+        String sql = "SELECT * FROM tasks WHERE assignee = 'Fernando'";
+        String executionResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando) (Última actualización por: Claudia)\n" +
+                "*Tarea 2*: Comprar groceries - Pendiente - (Fernando) (Última actualización por: Claudia)";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
+        log.info("Response: {}", response);
+
+        assertNotNull(response);
+        assertTrue(response.contains("Fernando"));
+        assertTrue(response.contains("Jugar al basket"));
+        assertTrue(response.contains("Comprar groceries"));
+    }
+
+    @Test
+    void testTaskIdsInResponse() {
+        String userMessage = "Muéstrame las tareas";
+        String sql = "SELECT * FROM tasks";
+        String executionResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando) (Última actualización por: Claudia)\n" +
+                "*Tarea 2*: Comprar groceries - Pendiente - (María) (Última actualización por: Claudia)\n" +
+                "*Tarea 3*: Llamar al médico - Pendiente - (Juan) (Última actualización por: Claudia)";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage,"Fernando")).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
+        log.info("Response: {}", response);
+
+        assertNotNull(response);
+        assertTrue(response.contains("Tarea 1"));
+        assertTrue(response.contains("Tarea 2"));
+        assertTrue(response.contains("Tarea 3"));
     }
 }
