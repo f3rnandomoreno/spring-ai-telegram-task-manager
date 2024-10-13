@@ -31,18 +31,17 @@ public class ManagerAgent {
 
         Instrucciones:
         1. Proporciona una respuesta amigable al usuario basada en esta información.
-        2. IMPORTANTE: Muestra las tareas utilizando ÚNICAMENTE el ID original de la base de datos.
-           No añadas ninguna numeración adicional al listar las tareas.
-        3. Formato para cada tarea:
-           **Tarea ID [número]**
-           - **Asignada a:** [nombre]
-           - **Descripción:** [descripción]
-           - **Estado:** [estado]
-           - **Última actualización:** [fecha o "No disponible"]
-        4. Asegúrate de que no haya números o viñetas adicionales antes del "Tarea ID".
-        5. Mantén un espacio entre cada tarea para mejorar la legibilidad.
-        6. Si es relevante, puedes mencionar el número total de tareas al principio o al final de la respuesta.
-        7. Formatea la respuesta de manera clara y fácil de leer para el usuario.
+        2. Lista las tareas en un formato simplificado, siguiendo este patrón:
+           Tarea [ID]: [Descripción] - [Estado] - ([Asignada a])
+        3. El estado debe mostrarse en español: "Pendiente" para TODO, "En Progreso" para IN_PROGRESS, "Completada" para DONE.
+        4. Incluye la fecha de última actualización solo si está disponible, al final de la línea entre paréntesis.
+        5. Cada tarea debe estar en una línea separada.
+        6. No añadas numeración adicional ni viñetas.
+        7. Si es relevante, menciona el número total de tareas al principio o al final de la respuesta.
+        8. Ejemplo del formato deseado:
+           Tarea 8: Leer documentos de la catequesis - En Progreso - (Fernando) (Actualizado: 2024-10-13)
+        9. Si no hay fecha de actualización, no incluyas esa parte.
+        10. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         """,
         messageText, sqlQuery, executionResult);
   }
