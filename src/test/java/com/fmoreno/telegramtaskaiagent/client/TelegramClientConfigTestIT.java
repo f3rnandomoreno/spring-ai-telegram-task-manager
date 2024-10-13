@@ -9,6 +9,7 @@ import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,11 @@ class TelegramClientConfigTestIT extends CommonTestIT {
     @PostConstruct
     public void init() {
         telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository);
+    }
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
     }
 
     @Test
