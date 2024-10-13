@@ -3,7 +3,6 @@ package com.fmoreno.telegramtaskaiagent.agents;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +51,10 @@ public class ManagerAgentTestIT extends CommonTestIT {
     void testViewTask() {
         String userMessage = "Muéstrame mis tareas pendientes";
         String sql = "SELECT * FROM tasks WHERE status = 'pending'";
-        String executionResult = "1. Jugar al basket (Fernando)\n2. Comprar groceries (María)\n3. Llamar al médico (Juan)";
+        String executionResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando) (Última actualización por: Claudia)\n" +
+                "*Tarea 2*: Comprar groceries - Pendiente - (María) (Última actualización por: Claudia)\n" +
+                "*Tarea 3*: Llamar al médico - Pendiente - (Juan) (Última actualización por: Claudia)";
 
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
