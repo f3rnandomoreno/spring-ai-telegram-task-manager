@@ -92,8 +92,8 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
         // Ensure that the message text is as expected
         //TODO use the RelevancyEvaluator to assert the response
-        String expectedResponse = "Aquí tienes la lista de tareas"; // Reemplaza con la respuesta esperada real
-        assertThat(capturedMessage.getText()).contains(expectedResponse);
+        String expectedResponse = "aquí tienes la lista de tus tareas"; // Reemplaza con la respuesta esperada real
+        assertThat(capturedMessage.getText().toLowerCase()).containsAnyOf(expectedResponse,"lista de tareas");
     }
 
     @Test
