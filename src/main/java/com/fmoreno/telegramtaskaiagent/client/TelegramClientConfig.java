@@ -14,6 +14,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Log4j2
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
@@ -45,8 +47,10 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
 
       if (userEntityOptional.isEmpty()) {
         String messageText = update.getMessage().getText();
-        if (messageText.contains("@")) {
-          String email = messageText;
+        Pattern emailPattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+        Matcher matcher = emailPattern.matcher(messageText);
+        if (matcher.find()) {
+          String email = matcher.group();
           if (AllowedEmailsConfig.ALLOWED_EMAILS.contains(email)) {
             UserEntity newUser = new UserEntity();
             newUser.setUserId(userId);
