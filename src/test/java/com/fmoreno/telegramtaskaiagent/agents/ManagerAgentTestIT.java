@@ -42,7 +42,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
-        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         log.info("Response: {}", response);
         assertNotNull(response);
@@ -60,7 +60,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
-        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
         assertNotNull(response);
@@ -79,7 +79,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
-        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
         assertNotNull(response);
@@ -97,7 +97,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
-        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         assertNotNull(response);
         assertTrue(response.contains("eliminado la tarea"));
@@ -113,7 +113,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage)).thenReturn(sql);
         when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
 
-        String response = managerAgent.receiveMessageUser(userMessage, sql, executionResult);
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         assertNotNull(response);
         assertTrue(response.contains("error"));
