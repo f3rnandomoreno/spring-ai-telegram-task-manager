@@ -6,15 +6,13 @@ import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
+import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.util.List;
-import java.util.Optional;
 
 @Log4j2
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
@@ -59,6 +57,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
             sendMessage(update.getMessage().getChatId(), "You have been verified and added to the system.");
           } else {
             sendMessage(update.getMessage().getChatId(), "Your email is not in the list of allowed emails.");
+            return;
           }
         } else {
           sendMessage(update.getMessage().getChatId(), "Please provide your email for verification.");
