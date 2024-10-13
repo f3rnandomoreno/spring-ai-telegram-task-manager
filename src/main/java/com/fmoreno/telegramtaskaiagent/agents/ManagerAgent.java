@@ -34,7 +34,7 @@ public class ManagerAgent {
         Resultado de la ejecución:         ```
         %s        ```
         Instrucciones:
-        1. Proporciona una respuesta amigable al usuario basada en esta información, utilizando su nombre (%s) para personalizar la respuesta.
+        1. Proporciona una respuesta amigable al usuario basada en esta información, utilizando su nombre `%s` para personalizar la respuesta y las consultas.
         2. Lista las tareas en un formato simplificado, siguiendo este patrón:
            *Tarea [ID]*: [Descripción] - [Estado] - ([Asignada a])
         3. El estado debe mostrarse en español: "Pendiente" para TODO, "En Progreso" para IN_PROGRESS, "Completada" para DONE.
