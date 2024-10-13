@@ -19,7 +19,7 @@ public class ManagerAgent {
   public String receiveMessageUser(String message_text, String sqlQuery, String executionResult) {
     String promptText =
         String.format(
-            "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información.",
+            "Mensaje del usuario: %s\n\nConsulta SQL generada: %s\n\nResultado de la ejecución: %s\n\nPor favor, proporciona una respuesta amigable al usuario basada en esta información. La lista de tareas tiene como número el id de la base de datos de la tarea.",
             message_text, sqlQuery, executionResult);
     log.info("Prompt text: {}", promptText);
     return chatClient

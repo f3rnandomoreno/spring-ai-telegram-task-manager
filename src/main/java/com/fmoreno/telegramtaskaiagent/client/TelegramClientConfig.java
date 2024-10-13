@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.List;
+
 @Log4j2
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
 
@@ -32,7 +34,13 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   @Override
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
-      log.info("Received message: {}", update.getMessage().getText());
+      Long userId = update.getMessage().getFrom().getId();
+      List<Long> userIdsAllowed = List.of(6232756898L); // TODO: Add your userIds here
+      if (!userIdsAllowed.contains(userId)) {
+
+        throw new RuntimeException("User not allowed to use the bot, userId: " + userId);
+      }
+      log.info("Received message from {}: {}", userId, update.getMessage().getText());
 
       String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
       log.info("SQL Query: {}", sqlQuery);
@@ -50,6 +58,8 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
 
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
+      // get the userId from the update
+
       var chatResponse = managerAgent.receiveMessageUser(message_text, sqlQuery, executionResult);
       SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
 
