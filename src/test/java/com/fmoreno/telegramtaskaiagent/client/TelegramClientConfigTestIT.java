@@ -32,7 +32,6 @@ class TelegramClientConfigTestIT extends CommonTestIT {
     @Autowired
     private ManagerAgent managerAgent;
 
-//    @Autowired
     @MockBean
     private TelegramClient telegramClient;
 
@@ -45,7 +44,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
     @Test
     void testGetTaskList() throws Exception {
-        // Dado
+        // given
         String message = "Aquí tienes la lista de tareas";
         Update update = new Update();
         Message telegramMessage = new Message();
@@ -53,22 +52,21 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         telegramMessage.setChat(new Chat(9L, "private"));
         update.setMessage(telegramMessage);
 
-        // Capturar el mensaje enviado por telegramClient.execute()
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        // Usar un spy para capturar la llamada real
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
-        // Cuando
+        // when
         telegramClientConfig.consume(update);
 
-        // Entonces
+        // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
 
-        // Puedes imprimir el mensaje capturado para verificar su contenido
+        // You can print the captured message to verify its content
         System.out.println("Mensaje capturado: " + capturedMessage.getText());
 
-        // Asegúrate de que el texto del mensaje es el esperado
+        // Ensure that the message text is as expected
+        //TODO use the RelevancyEvaluator to assert the response
         String expectedResponse = "Aquí tienes la lista de tareas"; // Reemplaza con la respuesta esperada real
         assertThat(capturedMessage.getText()).contains(expectedResponse);
     }
