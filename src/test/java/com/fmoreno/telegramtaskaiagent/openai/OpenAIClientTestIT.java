@@ -7,16 +7,14 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 @Log4j2
 public class OpenAIClientTestIT extends CommonTestIT {
 
-  private final ChatClient chatClient;
-
-  public OpenAIClientTestIT(@Qualifier("managerChatClient") ChatClient chatClient) {
-    this.chatClient = chatClient;
-  }
+  @Autowired
+  private ChatClient chatClient;
 
   // Test to check connection to OpenAI API
   @Test
