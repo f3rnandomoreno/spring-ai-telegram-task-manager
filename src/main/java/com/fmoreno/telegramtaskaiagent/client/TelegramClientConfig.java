@@ -2,6 +2,7 @@ package com.fmoreno.telegramtaskaiagent.client;
 
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
@@ -44,15 +45,23 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
 
       if (userEntityOptional.isEmpty()) {
-        // Ask for email and verify
-        SendMessage message = SendMessage.builder()
-            .chatId(update.getMessage().getChatId())
-            .text("Please provide your email for verification.")
-            .build();
-        try {
-          telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-          log.error("Error sending message to Telegram", e);
+        String messageText = update.getMessage().getText();
+        if (messageText.contains("@")) {
+          String email = messageText;
+          if (AllowedEmailsConfig.ALLOWED_EMAILS.contains(email)) {
+            UserEntity newUser = new UserEntity();
+            newUser.setUserId(userId);
+            newUser.setEmail(email);
+            newUser.setFirstName(update.getMessage().getFrom().getFirstName());
+            newUser.setLastName(update.getMessage().getFrom().getLastName());
+            newUser.setUserName(update.getMessage().getFrom().getUserName());
+            userRepository.save(newUser);
+            sendMessage(update.getMessage().getChatId(), "You have been verified and added to the system.");
+          } else {
+            sendMessage(update.getMessage().getChatId(), "Your email is not in the list of allowed emails.");
+          }
+        } else {
+          sendMessage(update.getMessage().getChatId(), "Please provide your email for verification.");
         }
         return;
       }
@@ -90,6 +99,18 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       } catch (TelegramApiException e) {
         log.error("Error sending message to Telegram", e);
       }
+    }
+  }
+
+  private void sendMessage(Long chatId, String text) {
+    SendMessage message = SendMessage.builder()
+        .chatId(chatId)
+        .text(text)
+        .build();
+    try {
+      telegramClient.execute(message);
+    } catch (TelegramApiException e) {
+      log.error("Error sending message to Telegram", e);
     }
   }
 }
