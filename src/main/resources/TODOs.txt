@@ -1,4 +1,4 @@
-- cuando se le pide ver las tareas al chatbot a veces el chatbot se queda pillado al mostrar los resultados de las tareas con su sql information.
+- arreglar bug, debe mostrar siempre los ids de la base de datos.
 - chatbot puede asignar tareas a los usuarios independientemente de si está escrito en mayúsculas o minúsculas.
 - chatbot muestra siempre los ids de las tareas
 - chatbot muestra de forma elegante y simplificada las tareas

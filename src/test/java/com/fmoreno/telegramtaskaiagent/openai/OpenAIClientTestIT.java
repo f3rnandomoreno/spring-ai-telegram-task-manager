@@ -8,12 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Log4j2
 public class OpenAIClientTestIT extends CommonTestIT {
 
   @Autowired
-  ChatClient chatClient;
+  private ChatClient chatClient;
 
   // Test to check connection to OpenAI API
   @Test
@@ -26,5 +27,4 @@ public class OpenAIClientTestIT extends CommonTestIT {
     assertThat(content).isNotEmpty();
     assertThat(content).contains("Hello");
   }
-
 }

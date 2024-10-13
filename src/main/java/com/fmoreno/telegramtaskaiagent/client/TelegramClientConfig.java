@@ -4,31 +4,28 @@ import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.ai.chat.client.ChatClient;
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.List;
+
 @Log4j2
 public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
 
   final TelegramClient telegramClient;
-  final ChatClient chatClient;
   final NL2SQLAgent nl2SQLAgent;
   final TaskService taskService;
   final ManagerAgent managerAgent;
 
   public TelegramClientConfig(
-      String botToken,
-      ChatClient chatClient,
+      TelegramClient telegramClient,
       NL2SQLAgent nl2SQLAgent,
       TaskService taskService,
       ManagerAgent managerAgent) {
-    telegramClient = new OkHttpTelegramClient(botToken);
-    this.chatClient = chatClient;
+    this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
     this.managerAgent = managerAgent;
@@ -37,7 +34,13 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   @Override
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
-      log.info("Received message: {}", update.getMessage().getText());
+      Long userId = update.getMessage().getFrom().getId();
+      List<Long> userIdsAllowed = List.of(6232756898L); // TODO: Add your userIds here
+      if (!userIdsAllowed.contains(userId)) {
+
+        throw new RuntimeException("User not allowed to use the bot, userId: " + userId);
+      }
+      log.info("Received message from {}: {}", userId, update.getMessage().getText());
 
       String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText());
       log.info("SQL Query: {}", sqlQuery);
@@ -55,6 +58,8 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
 
       String message_text = update.getMessage().getText();
       long chat_id = update.getMessage().getChatId();
+      // get the userId from the update
+
       var chatResponse = managerAgent.receiveMessageUser(message_text, sqlQuery, executionResult);
       SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
 
