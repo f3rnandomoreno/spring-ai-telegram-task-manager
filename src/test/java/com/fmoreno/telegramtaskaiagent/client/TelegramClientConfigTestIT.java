@@ -9,7 +9,6 @@ import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +45,6 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
     private TelegramClientConfig telegramClientConfig;
 
-
-    @BeforeEach
-    void setUp() {
-        userRepository.deleteAll();
-    }
-
     @PostConstruct
     public void init() {
         telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository);
@@ -68,6 +61,15 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         User user = new User(1L, "TestUser", false);
         telegramMessage.setFrom(user);
         update.setMessage(telegramMessage);
+
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
 
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
