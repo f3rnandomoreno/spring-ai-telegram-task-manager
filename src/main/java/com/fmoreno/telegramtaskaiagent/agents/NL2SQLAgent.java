@@ -18,7 +18,7 @@ public class NL2SQLAgent {
     this.chatClient = chatClient;
   }
 
-  public String processNaturalLanguageToSQL(String input, String userName) {
+  public String processNaturalLanguageToSQL(String input, String assignee) {
     String prompt =
         "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n"
             + "La tabla 'tasks' tiene los siguientes campos:\n"
@@ -33,7 +33,7 @@ public class NL2SQLAgent {
             + input
             + "\n\n"
             + "Nombre del usuario: "
-            + userName
+            + assignee
             + "\n\n"
             + "Genera una consulta SQL válida basada en esta instrucción. No incluyas explicaciones, solo la consulta SQL.";
 

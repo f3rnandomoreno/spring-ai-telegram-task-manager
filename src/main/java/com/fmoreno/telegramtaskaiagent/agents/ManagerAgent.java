@@ -26,7 +26,7 @@ public class ManagerAgent {
     return generateResponse(promptText);
   }
 
-  private String buildPrompt(String messageText, String sqlQuery, String executionResult, String userName) {
+  private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
     return String.format("""
         ¡Hola %s!
 
@@ -53,7 +53,7 @@ public class ManagerAgent {
         9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añadas tareas que no estén en ese resultado.
         """,
-        userName, messageText, sqlQuery, executionResult, userName);
+        assignee, messageText, sqlQuery, executionResult, assignee);
   }
 
   private String generateResponse(String promptText) {

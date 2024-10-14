@@ -19,15 +19,40 @@ class TaskRepositoryTestIT extends CommonTestIT {
     TaskEntity task = new TaskEntity();
     task.setStatus(TaskStatus.TODO);
     task.setDescription("This is a test task.");
+    task.setAssignee("Fernando");
 
     TaskEntity savedTask = taskRepository.save(task);
 
     assertNotNull(savedTask.getId());
     Assertions.assertThat(savedTask.getDescription()).isEqualTo("This is a test task.");
+    Assertions.assertThat(savedTask.getAssignee()).isEqualTo("Fernando");
 
     Optional<TaskEntity> retrievedTask = taskRepository.findById(savedTask.getId());
     assertTrue(retrievedTask.isPresent());
     assertEquals(savedTask.getId(), retrievedTask.get().getId());
     assertEquals("This is a test task.", retrievedTask.get().getDescription());
+    assertEquals("Fernando", retrievedTask.get().getAssignee());
+  }
+
+  @Test
+  void testUpdateTaskAssignee() {
+    TaskEntity task = new TaskEntity();
+    task.setStatus(TaskStatus.TODO);
+    task.setDescription("This is a test task.");
+    task.setAssignee("Fernando");
+
+    TaskEntity savedTask = taskRepository.save(task);
+    savedTask.setAssignee("Maria");
+    TaskEntity updatedTask = taskRepository.save(savedTask);
+
+    assertNotNull(updatedTask.getId());
+    Assertions.assertThat(updatedTask.getDescription()).isEqualTo("This is a test task.");
+    Assertions.assertThat(updatedTask.getAssignee()).isEqualTo("Maria");
+
+    Optional<TaskEntity> retrievedTask = taskRepository.findById(updatedTask.getId());
+    assertTrue(retrievedTask.isPresent());
+    assertEquals(updatedTask.getId(), retrievedTask.get().getId());
+    assertEquals("This is a test task.", retrievedTask.get().getDescription());
+    assertEquals("Maria", retrievedTask.get().getAssignee());
   }
 }

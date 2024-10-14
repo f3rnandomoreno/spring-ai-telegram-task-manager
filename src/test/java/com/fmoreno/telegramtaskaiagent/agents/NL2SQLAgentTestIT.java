@@ -23,7 +23,7 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     @Test
     void testCreateTaskWithStatus() {
         String input = "Agregar tarea llamar al cliente asignada a María con estado en progreso";
-        String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Usuario");
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "María");
         assertThat(result.toLowerCase()).contains("insert into tasks");
         assertThat(result.toLowerCase()).contains("'llamar al cliente'");
         assertThat(result.toLowerCase()).contains("'maría'");
@@ -84,5 +84,32 @@ class NL2SQLAgentTestIT extends CommonTestIT {
         String sqlQuery = "SELECT * FORM tasks WHERE status = 'Pendiente'";
         String result = nl2SQLAgent.processSQLReview(sqlQuery);
         assertThat(result.trim()).startsWith("SELECT * FROM tasks WHERE status = 'Pendiente'");
+    }
+
+    @Test
+    void testCreateTaskAssignedToFernando() {
+        String input = "Crear una nueva tarea revisar el código asignada a Fernando";
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Fernando");
+        assertThat(result.toLowerCase()).contains("insert into tasks");
+        assertThat(result.toLowerCase()).contains("'revisar el código'");
+        assertThat(result.toLowerCase()).contains("'fernando'");
+    }
+
+    @Test
+    void testCreateTaskAssignedToMaria() {
+        String input = "Crear una nueva tarea preparar la presentación asignada a María";
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "María");
+        assertThat(result.toLowerCase()).contains("insert into tasks");
+        assertThat(result.toLowerCase()).contains("'preparar la presentación'");
+        assertThat(result.toLowerCase()).contains("'maría'");
+    }
+
+    @Test
+    void testCreateTaskAssignedToFernandoWithMaria() {
+        String input = "Crear una nueva tarea revisar el código asignada a Fernando";
+        String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "María");
+        assertThat(result.toLowerCase()).contains("insert into tasks");
+        assertThat(result.toLowerCase()).contains("'revisar el código'");
+        assertThat(result.toLowerCase()).contains("'fernando'");
     }
 }
