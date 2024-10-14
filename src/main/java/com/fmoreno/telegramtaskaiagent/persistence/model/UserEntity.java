@@ -19,6 +19,8 @@ public class UserEntity {
   @Column(unique = true)
   private Long userId;
 
+  private Long chatId;
+
   private String userName;
   private String firstName;
   private String lastName;

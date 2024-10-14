@@ -27,9 +27,9 @@ public class ManagerAgent {
   }
 
   private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
-    return String.format("""
-        ¡Hola %s!
-
+    return String.format(
+        """
+        \\¡Hola %s\\!
         He recibido tu mensaje:         ```
         %s        ```
 
@@ -42,16 +42,17 @@ public class ManagerAgent {
         Instrucciones:
         1. Proporciona una respuesta amigable al usuario basada en esta información, utilizando su nombre `%s` para personalizar la respuesta y las consultas.
          2. Lista las tareas en un formato simplificado, siguiendo este patrón con una linea vacia entre tareas:
-           *Tarea [ID]*: [Descripción] - [Estado] - ([Asignada a]) (Última actualización por: [Usuario])
+           *Tarea [ID]*: [Descripción] - _[Estado]_ - *[Asignada a]*
         3. El estado debe mostrarse en español: "Pendiente" para TODO, "En Progreso" para IN_PROGRESS, "Completada" para DONE.
         4. Incluye la fecha de última actualización solo si está disponible en el resultado de la ejecución, al final de la línea entre paréntesis.
         5. Cada tarea debe estar en una línea separada.
         6. No añadas numeración adicional ni viñetas.
         7. Ejemplo del formato deseado:
-           *Tarea 8*: Leer documentos de la catequesis - En Progreso - (Fernando) (Última actualización por: Claudia) (Actualizado: 2024-10-13)
+           *Tarea 8*: Leer documentos de la catequesis - _En Progreso_ - *Fernando*
         8. Si no hay fecha de actualización en el resultado, no incluyas esa parte.
         9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añadas tareas que no estén en ese resultado.
+        11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario.         
         """,
         assignee, messageText, sqlQuery, executionResult, assignee);
   }
