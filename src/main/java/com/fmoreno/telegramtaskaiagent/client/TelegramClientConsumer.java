@@ -69,7 +69,6 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
 
   @Override
   public void consume(Update update) {
-    log.info("Received update: {}", update);
     if (update.hasMessage() && update.getMessage().hasText()) {
       Long userId = update.getMessage().getFrom().getId();
       long chatId = update.getMessage().getChatId();
