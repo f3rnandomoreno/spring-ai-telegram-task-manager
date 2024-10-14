@@ -177,6 +177,14 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
 
   private void sendMessage(Long chatId, String text) {
     SendMessage message = SendMessage.builder().chatId(chatId).text(text).build();
+    // replace special characters in MarkdownV2
+    message.setText(message.getText().replace("!", "\\!"));
+    message.setText(message.getText().replace(".", "\\."));
+    message.setText(message.getText().replace("-", "\\-"));
+    message.setText(message.getText().replace("(", "\\("));
+    message.setText(message.getText().replace(")", "\\)"));
+
+    message.setParseMode("MarkdownV2");
     try {
       telegramClient.execute(message);
     } catch (TelegramApiException e) {
