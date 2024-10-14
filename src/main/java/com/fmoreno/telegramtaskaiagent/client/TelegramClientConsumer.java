@@ -45,6 +45,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
 
   @Override
   public void consume(Update update) {
+    log.info("Received update: {}", update);
     if (update.hasMessage() && update.getMessage().hasText()) {
       Long userId = update.getMessage().getFrom().getId();
       long chatId = update.getMessage().getChatId();
@@ -58,7 +59,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         return;
       }
 
-      handleExistingUser(update, chatId, userName, messageText);
+      handleExistingUser(update.getMessage().getFrom().getId(), chatId, userName, messageText);
     }
   }
 
@@ -97,6 +98,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   private void createAndSaveNewUser(Update update, String email) {
     UserEntity newUser = new UserEntity();
     newUser.setUserId(update.getMessage().getFrom().getId());
+    newUser.setChatId(update.getMessage().getChatId());
     newUser.setEmail(email);
     newUser.setFirstName(update.getMessage().getFrom().getFirstName());
     newUser.setLastName(update.getMessage().getFrom().getLastName());
@@ -104,35 +106,33 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     userRepository.save(newUser);
   }
 
-  private void handleExistingUser(Update update, long chatId, String userName, String messageText) {
-    log.info("Received message from {}: {}", update.getMessage().getFrom().getId(), messageText);
+  private void handleExistingUser(Long userId, long chatId, String userName, String messageText) {
+    log.info("Received message from {}: {}", userId, messageText);
 
-    if (isSpecialCommand(messageText, chatId)) {
-      return;
+    var _message = isSpecialCommand(messageText);
+    if (_message == null) {
+      _message = messageText;
     }
 
-    String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(messageText, userName);
+    String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(_message, userName);
     log.info("SQL Query: {}", sqlQuery);
 
     String executionResult = executeSQLQuery(sqlQuery);
-    String chatResponse = managerAgent.processUserMessage(messageText, sqlQuery, executionResult, userName);
+    String chatResponse = managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
     sendMessage(chatId, chatResponse);
   }
 
-  private boolean isSpecialCommand(String messageText, long chatId) {
+  private String isSpecialCommand(String messageText) {
     switch (messageText) {
       case "/ver_todas_las_tareas":
-        welcomeService.handleVerTodasLasTareas(chatId);
-        return true;
+        return "ver todas la tareas";
       case "/ver_mis_tareas":
-        welcomeService.handleVerMisTareas(chatId);
-        return true;
+        return "ver mis tareas";
       case "/start":
-        welcomeService.showStartMessage(chatId);
-        return true;
+        return "start";
       default:
-        return false;
+        return null;
     }
   }
 
