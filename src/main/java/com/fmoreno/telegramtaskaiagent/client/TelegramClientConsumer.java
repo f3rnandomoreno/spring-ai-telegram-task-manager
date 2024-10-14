@@ -47,78 +47,107 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   public void consume(Update update) {
     if (update.hasMessage() && update.getMessage().hasText()) {
       Long userId = update.getMessage().getFrom().getId();
-      long chat_id = update.getMessage().getChatId();
-      String userName = update.getMessage().getFrom().getFirstName();
+      long chatId = update.getMessage().getChatId();
+      String userName = getUserName(update);
+      String messageText = update.getMessage().getText();
+
       Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
 
       if (userEntityOptional.isEmpty()) {
-        String messageText = update.getMessage().getText();
-        Pattern emailPattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
-        Matcher matcher = emailPattern.matcher(messageText);
-        if (matcher.find()) {
-          String email = matcher.group();
-          if (AllowedEmailsConfig.ALLOWED_EMAILS.contains(email.toLowerCase())) {
-            UserEntity newUser = new UserEntity();
-            newUser.setUserId(userId);
-            newUser.setEmail(email);
-            newUser.setFirstName(update.getMessage().getFrom().getFirstName());
-            newUser.setLastName(update.getMessage().getFrom().getLastName());
-            newUser.setUserName(update.getMessage().getFrom().getUserName());
-            userRepository.save(newUser);
-            sendMessage(update.getMessage().getChatId(), "You have been verified and added to the system.");
-            welcomeService.showStartMessage(chat_id);
-          } else {
-            sendMessage(update.getMessage().getChatId(), "Your email is not in the list of allowed emails.");
-          }
-        } else {
-          sendMessage(update.getMessage().getChatId(), "Please provide your email for verification.");
-        }
+        handleNewUser(update, chatId);
         return;
       }
 
-      if (userName.isEmpty()) {
-        userName = update.getMessage().getFrom().getUserName();
+      handleExistingUser(update, chatId, userName, messageText);
+    }
+  }
+
+  private String getUserName(Update update) {
+    String userName = update.getMessage().getFrom().getFirstName();
+    return userName.isEmpty() ? update.getMessage().getFrom().getUserName() : userName;
+  }
+
+  private void handleNewUser(Update update, long chatId) {
+    String messageText = update.getMessage().getText();
+    String email = extractEmail(messageText);
+
+    if (email != null) {
+      if (isAllowedEmail(email)) {
+        createAndSaveNewUser(update, email);
+        sendMessage(chatId, "You have been verified and added to the system.");
+        welcomeService.showStartMessage(chatId);
+      } else {
+        sendMessage(chatId, "Your email is not in the list of allowed emails.");
       }
-      log.info("Received message from {}: {}", userId, update.getMessage().getText());
+    } else {
+      sendMessage(chatId, "Please provide your email for verification.");
+    }
+  }
 
-      String messageText = update.getMessage().getText();
-      if (messageText.equals("/ver_todas_las_tareas")) {
-        welcomeService.handleVerTodasLasTareas(chat_id);
-        return;
-      } else if (messageText.equals("/ver_mis_tareas")) {
-        welcomeService.handleVerMisTareas(chat_id);
-        return;
-      }
+  private String extractEmail(String messageText) {
+    Pattern emailPattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+    Matcher matcher = emailPattern.matcher(messageText);
+    return matcher.find() ? matcher.group() : null;
+  }
 
-      // Check if the user has opened the chat
-      if (messageText.equals("/start")) {
-        welcomeService.showStartMessage(chat_id);
-        return;
-      }
+  private boolean isAllowedEmail(String email) {
+    return AllowedEmailsConfig.ALLOWED_EMAILS.contains(email.toLowerCase());
+  }
 
-      String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(messageText, userName);
-      log.info("SQL Query: {}", sqlQuery);
+  private void createAndSaveNewUser(Update update, String email) {
+    UserEntity newUser = new UserEntity();
+    newUser.setUserId(update.getMessage().getFrom().getId());
+    newUser.setEmail(email);
+    newUser.setFirstName(update.getMessage().getFrom().getFirstName());
+    newUser.setLastName(update.getMessage().getFrom().getLastName());
+    newUser.setUserName(update.getMessage().getFrom().getUserName());
+    userRepository.save(newUser);
+  }
 
-      String executionResult = "";
-      if (!sqlQuery.isEmpty()) {
-        try {
-          executionResult = taskService.executeSQLQuery(sqlQuery);
-          log.info("SQL Query executed successfully: {}", sqlQuery);
-        } catch (Exception e) {
-          log.error("Error executing SQL query: {}", e.getMessage());
-          executionResult = "Error al ejecutar la consulta: " + e.getMessage();
-        }
-      }
+  private void handleExistingUser(Update update, long chatId, String userName, String messageText) {
+    log.info("Received message from {}: {}", update.getMessage().getFrom().getId(), messageText);
 
-      var chatResponse =
-          managerAgent.processUserMessage(messageText, sqlQuery, executionResult, userName);
-      SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
+    if (isSpecialCommand(messageText, chatId)) {
+      return;
+    }
 
-      try {
-        telegramClient.execute(message);
-      } catch (TelegramApiException e) {
-        log.error("Error sending message to Telegram", e);
-      }
+    String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(messageText, userName);
+    log.info("SQL Query: {}", sqlQuery);
+
+    String executionResult = executeSQLQuery(sqlQuery);
+    String chatResponse = managerAgent.processUserMessage(messageText, sqlQuery, executionResult, userName);
+
+    sendMessage(chatId, chatResponse);
+  }
+
+  private boolean isSpecialCommand(String messageText, long chatId) {
+    switch (messageText) {
+      case "/ver_todas_las_tareas":
+        welcomeService.handleVerTodasLasTareas(chatId);
+        return true;
+      case "/ver_mis_tareas":
+        welcomeService.handleVerMisTareas(chatId);
+        return true;
+      case "/start":
+        welcomeService.showStartMessage(chatId);
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private String executeSQLQuery(String sqlQuery) {
+    if (sqlQuery.isEmpty()) {
+      return "";
+    }
+
+    try {
+      String result = taskService.executeSQLQuery(sqlQuery);
+      log.info("SQL Query executed successfully: {}", sqlQuery);
+      return result;
+    } catch (Exception e) {
+      log.error("Error executing SQL query: {}", e.getMessage());
+      return "Error al ejecutar la consulta: " + e.getMessage();
     }
   }
 

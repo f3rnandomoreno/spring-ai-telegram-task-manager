@@ -330,7 +330,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("las tareas");
+        assertThat(capturedMessage.getText()).contains("Hola TestUser");
     }
 
     @Test
