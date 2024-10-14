@@ -1,11 +1,9 @@
 package com.fmoreno.telegramtaskaiagent.service;
 
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-@Service
 public class WelcomeService {
 
     private final TelegramClient telegramClient;
@@ -31,6 +29,18 @@ public class WelcomeService {
         String message = "Ejecutando comando: ver mis tareas";
         sendMessage(chatId, message);
         // Aquí puedes agregar la lógica para manejar la opción de ver mis tareas
+    }
+
+    public void showStartMessage(Long chatId, boolean isVerified) {
+        String welcomeMessage;
+        if (isVerified) {
+            welcomeMessage = "¡Bienvenido! Estas son tus opciones:\n" +
+                    "/ver_todas_las_tareas - Ver todas las tareas\n" +
+                    "/ver_mis_tareas - Ver mis tareas";
+        } else {
+            welcomeMessage = "Hola! soy tu asistente de tareas, para verificar el acceso debes introducir tu correo electrónico";
+        }
+        sendMessage(chatId, welcomeMessage);
     }
 
     private void sendMessage(Long chatId, String text) {
