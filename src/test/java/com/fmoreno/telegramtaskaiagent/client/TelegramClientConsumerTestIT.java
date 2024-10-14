@@ -21,6 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Optional;
@@ -51,7 +52,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     private TelegramClientConsumer telegramClientConsumer;
 
     @PostConstruct
-    public void init() {
+    public void init() throws TelegramApiException {
         telegramClientConsumer = new TelegramClientConsumer(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository, welcomeService);
     }
 

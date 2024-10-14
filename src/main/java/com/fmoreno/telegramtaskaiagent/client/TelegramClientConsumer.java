@@ -7,19 +7,28 @@ import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
+import jakarta.annotation.PostConstruct;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Log4j2
+@Component
 public class TelegramClientConsumer implements LongPollingSingleThreadUpdateConsumer {
+
+  @Value("${telegram.bot.token}")
+  protected String botToken;
 
   final TelegramClient telegramClient;
   final NL2SQLAgent nl2SQLAgent;
@@ -41,6 +50,21 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     this.managerAgent = managerAgent;
     this.userRepository = userRepository;
     this.welcomeService = welcomeService;
+  }
+
+  @PostConstruct
+  public void init() throws TelegramApiException {
+    TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
+    botsApplication.registerBot(
+        botToken,
+        new TelegramClientConsumer(
+            telegramClient,
+            nl2SQLAgent,
+            taskService,
+            managerAgent,
+            userRepository,
+            welcomeService));
+    log.info("Telegram bot initialized");
   }
 
   @Override
@@ -118,7 +142,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     log.info("SQL Query: {}", sqlQuery);
 
     String executionResult = executeSQLQuery(sqlQuery);
-    String chatResponse = managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
+    String chatResponse =
+        managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
     sendMessage(chatId, chatResponse);
   }
@@ -152,10 +177,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   }
 
   private void sendMessage(Long chatId, String text) {
-    SendMessage message = SendMessage.builder()
-        .chatId(chatId)
-        .text(text)
-        .build();
+    SendMessage message = SendMessage.builder().chatId(chatId).text(text).build();
     try {
       telegramClient.execute(message);
     } catch (TelegramApiException e) {
