@@ -75,13 +75,13 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     if (email != null) {
       if (isAllowedEmail(email)) {
         createAndSaveNewUser(update, email);
-        sendMessage(chatId, "You have been verified and added to the system.");
+        sendMessage(chatId, "Has sido verificado y añadido al sistema.");
         welcomeService.showStartMessage(chatId);
       } else {
-        sendMessage(chatId, "Your email is not in the list of allowed emails.");
+        sendMessage(chatId, "Tu email no está en la lista de emails permitidos.");
       }
     } else {
-      sendMessage(chatId, "Please provide your email for verification.");
+      sendMessage(chatId, "Por favor, introduce tu email para verificar tu usuario.");
     }
   }
 
