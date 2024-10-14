@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Log4j2
-public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsumer {
+public class TelegramClientConsumer implements LongPollingSingleThreadUpdateConsumer {
 
   final TelegramClient telegramClient;
   final NL2SQLAgent nl2SQLAgent;
@@ -28,7 +28,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   final UserRepository userRepository;
   final WelcomeService welcomeService;
 
-  public TelegramClientConfig(
+  public TelegramClientConsumer(
       TelegramClient telegramClient,
       NL2SQLAgent nl2SQLAgent,
       TaskService taskService,

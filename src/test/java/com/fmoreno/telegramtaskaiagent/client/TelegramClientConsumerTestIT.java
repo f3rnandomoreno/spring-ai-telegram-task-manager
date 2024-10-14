@@ -25,7 +25,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Optional;
 
-class TelegramClientConfigTestIT extends CommonTestIT {
+class TelegramClientConsumerTestIT extends CommonTestIT {
 
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -48,11 +48,11 @@ class TelegramClientConfigTestIT extends CommonTestIT {
     @MockBean
     private TelegramClient telegramClient;
 
-    private TelegramClientConfig telegramClientConfig;
+    private TelegramClientConsumer telegramClientConsumer;
 
     @PostConstruct
     public void init() {
-        telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository, welcomeService);
+        telegramClientConsumer = new TelegramClientConsumer(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository, welcomeService);
     }
 
     @BeforeEach
@@ -85,7 +85,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -116,12 +116,12 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("You have been verified and added to the system.");
+        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
 
         Optional<UserEntity> userEntityOptional = userRepository.findByEmail(email);
         assertThat(userEntityOptional).isPresent();
@@ -143,7 +143,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -170,7 +170,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(initialUpdate);
+        telegramClientConsumer.consume(initialUpdate);
 
         // then
         SendMessage initialCapturedMessage = argumentCaptor.getValue();
@@ -190,12 +190,12 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         allowedUpdate.setMessage(allowedTelegramMessage);
 
         // when
-        telegramClientConfig.consume(allowedUpdate);
+        telegramClientConsumer.consume(allowedUpdate);
 
         // then
         SendMessage allowedCapturedMessage = argumentCaptor.getValue();
         assertThat(allowedCapturedMessage).isNotNull();
-        assertThat(allowedCapturedMessage.getText()).contains("You have been verified and added to the system.");
+        assertThat(allowedCapturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
 
         Optional<UserEntity> allowedUserEntityOptional = userRepository.findByEmail(allowedEmail);
         assertThat(allowedUserEntityOptional).isPresent();
@@ -226,7 +226,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -259,7 +259,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -292,7 +292,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -325,12 +325,12 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("Resultados:");
+        assertThat(capturedMessage.getText()).contains("las tareas");
     }
 
     @Test
@@ -358,7 +358,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -391,7 +391,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
@@ -424,7 +424,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
         // when
-        telegramClientConfig.consume(update);
+        telegramClientConsumer.consume(update);
 
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();

@@ -1,9 +1,11 @@
 package com.fmoreno.telegramtaskaiagent.service;
 
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+@Service
 public class WelcomeService {
 
     private final TelegramClient telegramClient;
