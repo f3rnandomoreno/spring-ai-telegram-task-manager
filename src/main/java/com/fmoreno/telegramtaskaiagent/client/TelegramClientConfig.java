@@ -53,7 +53,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
         Matcher matcher = emailPattern.matcher(messageText);
         if (matcher.find()) {
           String email = matcher.group();
-          if (AllowedEmailsConfig.ALLOWED_EMAILS.contains(email)) {
+          if (AllowedEmailsConfig.ALLOWED_EMAILS.contains(email.toLowerCase())) {
             UserEntity newUser = new UserEntity();
             newUser.setUserId(userId);
             newUser.setEmail(email);

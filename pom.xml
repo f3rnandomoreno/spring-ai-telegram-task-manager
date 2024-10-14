@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<spring-ai.version>1.0.0</spring-ai.version>
+		<spring-ai.version>1.0.0-M3</spring-ai.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -38,10 +38,12 @@
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+			<version>${spring-ai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+			<version>${spring-ai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -111,6 +113,7 @@
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-spring-boot-testcontainers</artifactId>
+			<version>${spring-ai.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -123,19 +126,7 @@
 			<artifactId>sqlite-jdbc</artifactId>
 			<version>3.43.0.0</version>
 		</dependency>
-
 	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.ai</groupId>
-				<artifactId>spring-ai-bom</artifactId>
-				<version>${spring-ai.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<build>
 		<plugins>
