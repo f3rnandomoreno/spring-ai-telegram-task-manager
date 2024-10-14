@@ -6,6 +6,7 @@ import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
+import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
 import lombok.extern.log4j.Log4j2;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,18 +26,21 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
   final TaskService taskService;
   final ManagerAgent managerAgent;
   final UserRepository userRepository;
+  final WelcomeService welcomeService;
 
   public TelegramClientConfig(
       TelegramClient telegramClient,
       NL2SQLAgent nl2SQLAgent,
       TaskService taskService,
       ManagerAgent managerAgent,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      WelcomeService welcomeService) {
     this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
     this.managerAgent = managerAgent;
     this.userRepository = userRepository;
+    this.welcomeService = welcomeService;
   }
 
   @Override
@@ -62,6 +66,7 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
             newUser.setUserName(update.getMessage().getFrom().getUserName());
             userRepository.save(newUser);
             sendMessage(update.getMessage().getChatId(), "You have been verified and added to the system.");
+            welcomeService.showStartMessage(chat_id);
           } else {
             sendMessage(update.getMessage().getChatId(), "Your email is not in the list of allowed emails.");
           }
@@ -76,7 +81,16 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
       }
       log.info("Received message from {}: {}", userId, update.getMessage().getText());
 
-      String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(update.getMessage().getText(), userName);
+      String messageText = update.getMessage().getText();
+      if (messageText.equals("/ver_todas_las_tareas")) {
+        welcomeService.handleVerTodasLasTareas(chat_id);
+        return;
+      } else if (messageText.equals("/ver_mis_tareas")) {
+        welcomeService.handleVerMisTareas(chat_id);
+        return;
+      }
+
+      String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(messageText, userName);
       log.info("SQL Query: {}", sqlQuery);
 
       String executionResult = "";
@@ -90,10 +104,8 @@ public class TelegramClientConfig implements LongPollingSingleThreadUpdateConsum
         }
       }
 
-      String message_text = update.getMessage().getText();
-
       var chatResponse =
-          managerAgent.processUserMessage(message_text, sqlQuery, executionResult, userName);
+          managerAgent.processUserMessage(messageText, sqlQuery, executionResult, userName);
       SendMessage message = SendMessage.builder().chatId(chat_id).text(chatResponse).build();
 
       try {
