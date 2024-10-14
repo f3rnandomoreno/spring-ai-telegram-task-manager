@@ -26,7 +26,6 @@ public class NL2SQLAgent {
             + "- description (TEXT)\n"
             + "- assignee (TEXT)\n"
             + "- status (TEXT, puede ser 'TODO','BLOCKED','IN_PROGRESS','DONE')\n"
-            + "- last_update_by_user (TEXT)\n"
             + "- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n"
             + "- updated_at (DATETIME)\n\n"
             + "Instrucción del usuario: "
