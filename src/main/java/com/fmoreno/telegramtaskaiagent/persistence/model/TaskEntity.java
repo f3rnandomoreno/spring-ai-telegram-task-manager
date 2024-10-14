@@ -22,7 +22,6 @@ public class TaskEntity {
   @Enumerated(EnumType.STRING)
   private TaskStatus status = TaskStatus.TODO;
 
-  private String lastUpdateByUser;
   private ZonedDateTime createdAt;
   private ZonedDateTime updatedAt;
 }

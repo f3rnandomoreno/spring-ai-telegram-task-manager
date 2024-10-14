@@ -26,7 +26,7 @@ public class ManagerAgent {
     return generateResponse(promptText);
   }
 
-  private String buildPrompt(String messageText, String sqlQuery, String executionResult, String userName) {
+  private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
     return String.format("""
         ¡Hola %s!
 
@@ -41,7 +41,7 @@ public class ManagerAgent {
 
         Instrucciones:
         1. Proporciona una respuesta amigable al usuario basada en esta información, utilizando su nombre `%s` para personalizar la respuesta y las consultas.
-         2. Lista las tareas en un formato simplificado, siguiendo este patrón:
+         2. Lista las tareas en un formato simplificado, siguiendo este patrón con una linea vacia entre tareas:
            *Tarea [ID]*: [Descripción] - [Estado] - ([Asignada a]) (Última actualización por: [Usuario])
         3. El estado debe mostrarse en español: "Pendiente" para TODO, "En Progreso" para IN_PROGRESS, "Completada" para DONE.
         4. Incluye la fecha de última actualización solo si está disponible en el resultado de la ejecución, al final de la línea entre paréntesis.
@@ -53,7 +53,7 @@ public class ManagerAgent {
         9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añadas tareas que no estén en ese resultado.
         """,
-        userName, messageText, sqlQuery, executionResult, userName);
+        assignee, messageText, sqlQuery, executionResult, assignee);
   }
 
   private String generateResponse(String promptText) {

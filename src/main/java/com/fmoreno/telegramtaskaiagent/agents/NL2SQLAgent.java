@@ -18,7 +18,7 @@ public class NL2SQLAgent {
     this.chatClient = chatClient;
   }
 
-  public String processNaturalLanguageToSQL(String input, String userName) {
+  public String processNaturalLanguageToSQL(String input, String assignee) {
     String prompt =
         "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n"
             + "La tabla 'tasks' tiene los siguientes campos:\n"
@@ -26,14 +26,13 @@ public class NL2SQLAgent {
             + "- description (TEXT)\n"
             + "- assignee (TEXT)\n"
             + "- status (TEXT, puede ser 'TODO','BLOCKED','IN_PROGRESS','DONE')\n"
-            + "- last_update_by_user (TEXT)\n"
             + "- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n"
             + "- updated_at (DATETIME)\n\n"
             + "Instrucción del usuario: "
             + input
             + "\n\n"
             + "Nombre del usuario: "
-            + userName
+            + assignee
             + "\n\n"
             + "Genera una consulta SQL válida basada en esta instrucción. No incluyas explicaciones, solo la consulta SQL.";
 
