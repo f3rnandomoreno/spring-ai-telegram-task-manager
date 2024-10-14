@@ -8,6 +8,7 @@ import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
+import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class TelegramClientConfigTestIT extends CommonTestIT {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private WelcomeService welcomeService;
+
     @MockBean
     private TelegramClient telegramClient;
 
@@ -48,7 +52,7 @@ class TelegramClientConfigTestIT extends CommonTestIT {
 
     @PostConstruct
     public void init() {
-        telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository);
+        telegramClientConfig = new TelegramClientConfig(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository, welcomeService);
     }
 
     @BeforeEach
@@ -327,5 +331,104 @@ class TelegramClientConfigTestIT extends CommonTestIT {
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
         assertThat(capturedMessage.getText()).contains("Resultados:");
+    }
+
+    @Test
+    void testShowStartMessage() throws Exception {
+        // given
+        String message = "/start";
+        Update update = new Update();
+        Message telegramMessage = new Message();
+        telegramMessage.setText(message);
+        telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User(1L, "TestUser", false);
+        telegramMessage.setFrom(user);
+        update.setMessage(telegramMessage);
+
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
+
+        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
+        org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
+
+        // when
+        telegramClientConfig.consume(update);
+
+        // then
+        SendMessage capturedMessage = argumentCaptor.getValue();
+        assertThat(capturedMessage).isNotNull();
+        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
+    }
+
+    @Test
+    void testHandleVerTodasLasTareas() throws Exception {
+        // given
+        String message = "/ver_todas_las_tareas";
+        Update update = new Update();
+        Message telegramMessage = new Message();
+        telegramMessage.setText(message);
+        telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User(1L, "TestUser", false);
+        telegramMessage.setFrom(user);
+        update.setMessage(telegramMessage);
+
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
+
+        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
+        org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
+
+        // when
+        telegramClientConfig.consume(update);
+
+        // then
+        SendMessage capturedMessage = argumentCaptor.getValue();
+        assertThat(capturedMessage).isNotNull();
+        assertThat(capturedMessage.getText()).contains("Ejecutando comando: ver todas las tareas");
+    }
+
+    @Test
+    void testHandleVerMisTareas() throws Exception {
+        // given
+        String message = "/ver_mis_tareas";
+        Update update = new Update();
+        Message telegramMessage = new Message();
+        telegramMessage.setText(message);
+        telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User(1L, "TestUser", false);
+        telegramMessage.setFrom(user);
+        update.setMessage(telegramMessage);
+
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
+
+        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
+        org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
+
+        // when
+        telegramClientConfig.consume(update);
+
+        // then
+        SendMessage capturedMessage = argumentCaptor.getValue();
+        assertThat(capturedMessage).isNotNull();
+        assertThat(capturedMessage.getText()).contains("Ejecutando comando: ver mis tareas");
     }
 }
