@@ -431,4 +431,37 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         assertThat(capturedMessage).isNotNull();
         assertThat(capturedMessage.getText()).contains("Ejecutando comando: ver mis tareas");
     }
+
+    @Test
+    void testWelcomeMessageOnChatOpen() throws Exception {
+        // given
+        String message = "/start";
+        Update update = new Update();
+        Message telegramMessage = new Message();
+        telegramMessage.setText(message);
+        telegramMessage.setChat(new Chat(9L, "private"));
+        User user = new User(1L, "TestUser", false);
+        telegramMessage.setFrom(user);
+        update.setMessage(telegramMessage);
+
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
+
+        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
+        org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
+
+        // when
+        telegramClientConsumer.consume(update);
+
+        // then
+        SendMessage capturedMessage = argumentCaptor.getValue();
+        assertThat(capturedMessage).isNotNull();
+        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
+    }
 }

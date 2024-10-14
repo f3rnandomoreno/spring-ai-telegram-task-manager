@@ -90,6 +90,12 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         return;
       }
 
+      // Check if the user has opened the chat
+      if (messageText.equals("/start")) {
+        welcomeService.showStartMessage(chat_id);
+        return;
+      }
+
       String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(messageText, userName);
       log.info("SQL Query: {}", sqlQuery);
 
