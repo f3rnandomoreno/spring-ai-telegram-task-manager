@@ -187,4 +187,20 @@ public class ManagerAgentTestIT extends CommonTestIT {
         assertNotNull(allTasksResponse);
         assertTrue(allTasksResponse.contains("Leer un libro"));
     }
+
+    @Test
+    void testModifyTask() {
+        String userMessage = "Modifica la tarea 'Comprar leche' y cámbiala a 'Comprar pan'";
+        String sql = "UPDATE tasks SET description = 'Comprar pan' WHERE description = 'Comprar leche'";
+        String executionResult = "1 row(s) affected";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage, "Fernando")).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
+        log.info("Response: {}", response);
+
+        assertNotNull(response);
+        assertEquals("Tarea modificada correctamente.", response);
+    }
 }
