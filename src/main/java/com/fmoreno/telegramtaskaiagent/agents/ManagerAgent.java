@@ -59,6 +59,7 @@ public class ManagerAgent {
         9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añadas tareas que no estén en ese resultado.
         11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario.
+        12. No muestres la fecha de la actualización.
         """,
         assignee, messageText, sqlQuery, executionResult, assignee);
   }
