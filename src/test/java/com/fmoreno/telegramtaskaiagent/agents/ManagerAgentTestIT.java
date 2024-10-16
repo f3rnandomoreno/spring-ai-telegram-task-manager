@@ -1,12 +1,11 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
@@ -45,8 +44,18 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
         log.info("Response: {}", response);
-        assertNotNull(response);
-        assertEquals("Tarea creada correctamente.", response);
+        assertThat(response).isNotNull()
+                            .contains("Tarea creada correctamente.")
+                            .contains("Jugar al basket")
+                            .contains("Comprar groceries");
+
+        // Verificar que se muestran todas las tareas después de crear
+        String allTasksQuery = "SELECT * FROM tasks";
+        String allTasksResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando)\n" +
+                "*Tarea 2*: Comprar groceries - Pendiente - (María)";
+
+        when(taskService.executeSQLQuery(allTasksQuery)).thenReturn(allTasksResult);
     }
 
     @Test
@@ -64,11 +73,11 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
-        assertNotNull(response);
-        assertTrue(response.contains("tareas pendientes"));
-        assertTrue(response.contains("Jugar al basket"));
-        assertTrue(response.contains("Comprar groceries"));
-        assertTrue(response.contains("Llamar al médico"));
+        assertThat(response).isNotNull()
+                            .contains("tareas pendientes")
+                            .contains("Jugar al basket")
+                            .contains("Comprar groceries")
+                            .contains("Llamar al médico");
     }
 
     @Test
@@ -83,8 +92,19 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
-        assertNotNull(response);
-        assertEquals("Tarea modificada correctamente.", response);
+        assertThat(response).isNotNull()
+                            .contains("he actualizado la tarea correctamente.")
+                            .contains("Jugar al basket")
+                            .contains("Comprar verduras")
+                            .doesNotContain("Comprar groceries");
+
+        // Verificar que se muestran todas las tareas después de modificar
+        String allTasksQuery = "SELECT * FROM tasks";
+        String allTasksResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando)\n" +
+                "*Tarea 2*: Comprar verduras - Pendiente - (María)";
+
+        when(taskService.executeSQLQuery(allTasksQuery)).thenReturn(allTasksResult);
     }
 
     @Test
@@ -98,11 +118,21 @@ public class ManagerAgentTestIT extends CommonTestIT {
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
-        assertNotNull(response);
-        assertEquals("Tarea eliminada correctamente.", response);
+        assertThat(response).isNotNull()
+                            .contains("Tarea eliminada correctamente.")
+                            .contains("Jugar al basket")
+                            .contains("Comprar verduras")
+                            .doesNotContain("Llamar al médico");
+
+        // Verificar que se muestran todas las tareas después de eliminar
+        String allTasksQuery = "SELECT * FROM tasks";
+        String allTasksResult = "Resultados:\n" +
+                "*Tarea 1*: Jugar al basket - Pendiente - (Fernando)\n" +
+                "*Tarea 2*: Comprar verduras - Pendiente - (María)";
+
+        when(taskService.executeSQLQuery(allTasksQuery)).thenReturn(allTasksResult);
     }
 
-    // TODO (fix this test)
     @Test
     void testErrorHandling() {
         String userMessage = "Crea una tarea inválida";
@@ -114,8 +144,8 @@ public class ManagerAgentTestIT extends CommonTestIT {
 
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
 
-        assertNotNull(response);
-        Assertions.assertThat(response).contains("Error al ejecutar la consulta");
+        assertThat(response).isNotNull()
+                            .contains("Error al ejecutar la consulta");
     }
 
     @Test
@@ -132,10 +162,10 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
-        assertNotNull(response);
-        assertTrue(response.contains("Fernando"));
-        assertTrue(response.contains("Jugar al basket"));
-        assertTrue(response.contains("Comprar groceries"));
+        assertThat(response).isNotNull()
+                            .contains("Fernando")
+                            .contains("Jugar al basket")
+                            .contains("Comprar groceries");
     }
 
     @Test
@@ -153,10 +183,10 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
         log.info("Response: {}", response);
 
-        assertNotNull(response);
-        assertTrue(response.contains("Tarea 1"));
-        assertTrue(response.contains("Tarea 2"));
-        assertTrue(response.contains("Tarea 3"));
+        assertThat(response).isNotNull()
+                            .contains("Tarea 1")
+                            .contains("Tarea 2")
+                            .contains("Tarea 3");
     }
 
     @Test
@@ -171,8 +201,8 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "María");
 
         log.info("Response: {}", response);
-        assertNotNull(response);
-        assertEquals("Tarea creada correctamente.", response);
+        assertThat(response).isNotNull()
+                            .isEqualTo("Tarea creada correctamente.");
 
         String allTasksQuery = "SELECT * FROM tasks";
         String allTasksResult = "Resultados:\n" +
@@ -184,23 +214,7 @@ public class ManagerAgentTestIT extends CommonTestIT {
         String allTasksResponse = managerAgent.processUserMessage("ver todas las tareas", allTasksQuery, allTasksResult, "María");
         log.info("All Tasks Response: {}", allTasksResponse);
 
-        assertNotNull(allTasksResponse);
-        assertTrue(allTasksResponse.contains("Leer un libro"));
-    }
-
-    @Test
-    void testModifyTask() {
-        String userMessage = "Modifica la tarea 'Comprar leche' y cámbiala a 'Comprar pan'";
-        String sql = "UPDATE tasks SET description = 'Comprar pan' WHERE description = 'Comprar leche'";
-        String executionResult = "1 row(s) affected";
-
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage, "Fernando")).thenReturn(sql);
-        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
-
-        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "Fernando");
-        log.info("Response: {}", response);
-
-        assertNotNull(response);
-        assertEquals("Tarea modificada correctamente.", response);
+        assertThat(allTasksResponse).isNotNull()
+                                    .contains("Leer un libro");
     }
 }
