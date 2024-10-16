@@ -47,7 +47,6 @@ public class NL2SQLAgent {
             + "- description (TEXT)\n"
             + "- assignee (TEXT)\n"
             + "- status (TEXT, puede ser 'Pendiente', 'En Progreso', 'Bloqueada', o 'Completada')\n"
-            + "- lastUpdateByUser (TEXT)\n"
             + "- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n"
             + "- updated_at (DATETIME)\n\n"
             + "Consulta SQL a verificar: "
