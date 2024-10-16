@@ -25,11 +25,7 @@ public class TaskService {
         } else {
             int rowsAffected = jdbcTemplate.update(sqlQuery);
             String action = determineAction(lowerCaseQuery);
-            String result = String.format("%s realizada con éxito. Filas afectadas: %d", action, rowsAffected);
-            if (!lowerCaseQuery.startsWith("select")) {
-                result += "\n" + executeSQLQuery("SELECT * FROM tasks");
-            }
-            return result;
+            return String.format("%s realizada con éxito. Filas afectadas: %d", action, rowsAffected);
         }
     }
 

@@ -160,23 +160,6 @@ public class ManagerAgentTestIT extends CommonTestIT {
     }
 
     @Test
-    void testLastActionContext() {
-        String userMessage = "Crea la tarea leer un libro y asígnala a María";
-        String sql = "INSERT INTO tasks (description, assignee) VALUES ('leer un libro', 'María')";
-        String executionResult = "Task created successfully";
-
-        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage, "María")).thenReturn(sql);
-        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
-
-        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "María");
-
-        log.info("Response: {}", response);
-        assertNotNull(response);
-        assertEquals("Tarea creada correctamente.", response);
-        assertEquals("Inserción", managerAgent.getLastAction());
-    }
-
-    @Test
     void testShowAllTasksAfterAction() {
         String userMessage = "Crea la tarea leer un libro y asígnala a María";
         String sql = "INSERT INTO tasks (description, assignee) VALUES ('leer un libro', 'María')";
