@@ -1,5 +1,6 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
+import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -10,23 +11,28 @@ import org.springframework.stereotype.Service;
 public class ManagerAgent {
 
   private final ChatClient chatClient;
+  private final TaskService taskService;
 
-  public ManagerAgent(ChatClient chatClient) {
+  public ManagerAgent(ChatClient chatClient, TaskService taskService) {
     this.chatClient = chatClient;
+    this.taskService = taskService;
   }
 
-  public String processUserMessage(String messageText, String sqlQuery, String executionResult, String userName) {
+  public String processUserMessage(
+      String messageText, String sqlQuery, String executionResult, String userName) {
     String responseMessage = generateResponseMessage(sqlQuery, executionResult);
     if (responseMessage != null) {
-      return responseMessage;
+      responseMessage += taskService.executeSQLQuery("select * from tasks");
+    } else {
+      responseMessage = messageText;
     }
-
-    String promptText = buildPrompt(messageText, sqlQuery, executionResult, userName);
+    String promptText = buildPrompt(responseMessage, sqlQuery, executionResult, userName);
     log.info("Prompt text: {}", promptText);
     return generateResponse(promptText);
   }
 
-  private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
+  private String buildPrompt(
+      String messageText, String sqlQuery, String executionResult, String assignee) {
     return String.format(
         """
         \\¡Hola %s\\!
@@ -52,7 +58,7 @@ public class ManagerAgent {
         8. Si no hay fecha de actualización en el resultado, no incluyas esa parte.
         9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
         10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añadas tareas que no estén en ese resultado.
-        11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario.         
+        11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario.
         """,
         assignee, messageText, sqlQuery, executionResult, assignee);
   }
