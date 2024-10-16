@@ -158,4 +158,50 @@ public class ManagerAgentTestIT extends CommonTestIT {
         assertTrue(response.contains("Tarea 2"));
         assertTrue(response.contains("Tarea 3"));
     }
+
+    @Test
+    void testLastActionContext() {
+        String userMessage = "Crea la tarea leer un libro y asígnala a María";
+        String sql = "INSERT INTO tasks (description, assignee) VALUES ('leer un libro', 'María')";
+        String executionResult = "Task created successfully";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage, "María")).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "María");
+
+        log.info("Response: {}", response);
+        assertNotNull(response);
+        assertEquals("Tarea creada correctamente.", response);
+        assertEquals("Inserción", managerAgent.getLastAction());
+    }
+
+    @Test
+    void testShowAllTasksAfterAction() {
+        String userMessage = "Crea la tarea leer un libro y asígnala a María";
+        String sql = "INSERT INTO tasks (description, assignee) VALUES ('leer un libro', 'María')";
+        String executionResult = "Task created successfully";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL(userMessage, "María")).thenReturn(sql);
+        when(taskService.executeSQLQuery(sql)).thenReturn(executionResult);
+
+        String response = managerAgent.processUserMessage(userMessage, sql, executionResult, "María");
+
+        log.info("Response: {}", response);
+        assertNotNull(response);
+        assertEquals("Tarea creada correctamente.", response);
+
+        String allTasksQuery = "SELECT * FROM tasks";
+        String allTasksResult = "Resultados:\n" +
+                "*Tarea 1*: Leer un libro - Pendiente - (María)";
+
+        when(nl2SQLAgent.processNaturalLanguageToSQL("ver todas las tareas", "María")).thenReturn(allTasksQuery);
+        when(taskService.executeSQLQuery(allTasksQuery)).thenReturn(allTasksResult);
+
+        String allTasksResponse = managerAgent.processUserMessage("ver todas las tareas", allTasksQuery, allTasksResult, "María");
+        log.info("All Tasks Response: {}", allTasksResponse);
+
+        assertNotNull(allTasksResponse);
+        assertTrue(allTasksResponse.contains("Leer un libro"));
+    }
 }

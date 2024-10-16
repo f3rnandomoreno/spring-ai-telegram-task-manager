@@ -145,6 +145,13 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
     sendMessage(chatId, chatResponse);
+
+    if (managerAgent.getLastAction().equals("Inserción") || managerAgent.getLastAction().equals("Actualización") || managerAgent.getLastAction().equals("Eliminación")) {
+      String allTasksQuery = nl2SQLAgent.processNaturalLanguageToSQL("ver todas las tareas", userName);
+      String allTasksResult = executeSQLQuery(allTasksQuery);
+      String allTasksResponse = managerAgent.processUserMessage("ver todas las tareas", allTasksQuery, allTasksResult, userName);
+      sendMessage(chatId, allTasksResponse);
+    }
   }
 
   private String isSpecialCommand(String messageText) {

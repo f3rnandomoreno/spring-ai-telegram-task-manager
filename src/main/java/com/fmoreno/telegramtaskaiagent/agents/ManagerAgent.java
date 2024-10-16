@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 public class ManagerAgent {
 
   private final ChatClient chatClient;
+  private String lastAction; // Pa051
 
   public ManagerAgent(ChatClient chatClient) {
     this.chatClient = chatClient;
@@ -18,6 +19,7 @@ public class ManagerAgent {
   public String processUserMessage(String messageText, String sqlQuery, String executionResult, String userName) {
     String responseMessage = generateResponseMessage(sqlQuery, executionResult);
     if (responseMessage != null) {
+      updateLastAction(sqlQuery); // P24f6
       return responseMessage;
     }
 
@@ -77,5 +79,22 @@ public class ManagerAgent {
       return "Tarea eliminada correctamente.";
     }
     return null;
+  }
+
+  private void updateLastAction(String sqlQuery) { // P24f6
+    String lowerCaseQuery = sqlQuery.toLowerCase().trim();
+    if (lowerCaseQuery.startsWith("insert")) {
+      lastAction = "Inserción";
+    } else if (lowerCaseQuery.startsWith("update")) {
+      lastAction = "Actualización";
+    } else if (lowerCaseQuery.startsWith("delete")) {
+      lastAction = "Eliminación";
+    } else {
+      lastAction = "Operación";
+    }
+  }
+
+  public String getLastAction() { // P324b
+    return lastAction;
   }
 }
