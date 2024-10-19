@@ -5,18 +5,25 @@ import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
+import com.fmoreno.telegramtaskaiagent.service.AudioTranscriptionService;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
+import com.fmoreno.telegramtaskaiagent.util.AudioConverter;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -34,6 +41,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   final ManagerAgent managerAgent;
   final UserRepository userRepository;
   final WelcomeService welcomeService;
+  final AudioTranscriptionService audioTranscriptionService;
+  final AudioConverter audioConverter;
 
   public TelegramClientConsumer(
       TelegramClient telegramClient,
@@ -41,13 +50,17 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
       TaskService taskService,
       ManagerAgent managerAgent,
       UserRepository userRepository,
-      WelcomeService welcomeService) {
+      WelcomeService welcomeService,
+      AudioTranscriptionService audioTranscriptionService,
+      AudioConverter audioConverter) {
     this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
     this.managerAgent = managerAgent;
     this.userRepository = userRepository;
     this.welcomeService = welcomeService;
+    this.audioTranscriptionService = audioTranscriptionService;
+    this.audioConverter = audioConverter;
   }
 
   @PostConstruct
@@ -61,7 +74,9 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
             taskService,
             managerAgent,
             userRepository,
-            welcomeService));
+            welcomeService,
+            audioTranscriptionService,
+            audioConverter));
     log.info("Telegram bot initialized");
   }
 
@@ -81,6 +96,19 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
       }
 
       handleExistingUser(update.getMessage().getFrom().getId(), chatId, userName, messageText);
+    } else if (update.hasMessage() && update.getMessage().hasVoice()) {
+      Long userId = update.getMessage().getFrom().getId();
+      long chatId = update.getMessage().getChatId();
+      String userName = getUserName(update);
+
+      Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
+
+      if (userEntityOptional.isEmpty()) {
+        handleNewUser(update, chatId);
+        return;
+      }
+
+      handleAudioMessage(update, chatId, userName);
     }
   }
 
@@ -147,6 +175,34 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
     sendMessage(chatId, chatResponse);
+  }
+
+  private void handleAudioMessage(Update update, long chatId, String userName) {
+    try {
+      File audioFile = downloadAudioFile(update);
+      File wavFile = audioConverter.convertToWav(audioFile);
+      String transcribedText = audioTranscriptionService.transcribeAudio(wavFile);
+
+      handleExistingUser(update.getMessage().getFrom().getId(), chatId, userName, transcribedText);
+    } catch (IOException | UnsupportedAudioFileException e) {
+      log.error("Error processing audio message", e);
+      sendMessage(chatId, "An error occurred while processing the audio message. Please try again.");
+    }
+  }
+
+  private File downloadAudioFile(Update update) {
+    try {
+      String fileId = update.getMessage().getVoice().getFileId();
+      GetFile getFileMethod = new GetFile();
+      getFileMethod.setFileId(fileId);
+      File file = telegramClient.execute(getFileMethod);
+      String filePath = file.getFilePath();
+      java.io.File downloadedFile = telegramClient.downloadFile(filePath);
+      return downloadedFile;
+    } catch (TelegramApiException e) {
+      log.error("Error downloading audio file", e);
+      return null;
+    }
   }
 
   private String isSpecialCommand(String messageText) {
