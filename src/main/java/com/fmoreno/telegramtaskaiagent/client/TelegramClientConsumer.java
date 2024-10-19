@@ -11,8 +11,6 @@ import jakarta.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -135,6 +133,10 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     var _message = isSpecialCommand(messageText);
     if (_message == null) {
       _message = messageText;
+    }
+    if(messageText.equalsIgnoreCase("ayuda")){
+        welcomeService.showStartMessage(chatId);
+        return;
     }
 
     String sqlQuery = nl2SQLAgent.processNaturalLanguageToSQL(_message, userName);
