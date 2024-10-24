@@ -7,6 +7,7 @@ import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
+import com.fmoreno.telegramtaskaiagent.service.MessageService;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
 import jakarta.annotation.PostConstruct;
@@ -51,9 +52,20 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
 
     private TelegramClientConsumer telegramClientConsumer;
 
+    @Autowired
+    private MessageService messageService;
+
     @PostConstruct
     public void init() throws TelegramApiException {
-        telegramClientConsumer = new TelegramClientConsumer(telegramClient, nl2SQLAgent, taskService, managerAgent, userRepository, welcomeService);
+    telegramClientConsumer =
+        new TelegramClientConsumer(
+            telegramClient,
+            nl2SQLAgent,
+            taskService,
+            managerAgent,
+            userRepository,
+            welcomeService,
+            messageService);
     }
 
     @BeforeEach

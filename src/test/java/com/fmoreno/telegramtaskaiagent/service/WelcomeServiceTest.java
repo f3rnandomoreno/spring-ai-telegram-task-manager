@@ -3,6 +3,8 @@ package com.fmoreno.telegramtaskaiagent.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -13,84 +15,26 @@ import static org.mockito.Mockito.*;
 
 class WelcomeServiceTest {
 
+    private MessageService messageService;
+
     private WelcomeService welcomeService;
-    private TelegramClient telegramClient;
 
     @BeforeEach
     void setUp() {
-        telegramClient = Mockito.mock(TelegramClient.class);
-        welcomeService = new WelcomeService(telegramClient);
+        messageService = Mockito.mock(MessageService.class);
+        welcomeService = new WelcomeService(messageService);
     }
 
     @Test
-    void testShowStartMessage() throws TelegramApiException {
+    void testShowStartMessage() {
         Long chatId = 12345L;
         welcomeService.showStartMessage(chatId);
 
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        verify(telegramClient).execute(argumentCaptor.capture());
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(messageService).sendMessage(eq(chatId), argumentCaptor.capture());
 
-        SendMessage capturedMessage = argumentCaptor.getValue();
+        String capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getChatId()).isEqualTo(chatId.toString());
-        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
-    }
-
-    @Test
-    void testHandleVerTodasLasTareas() throws TelegramApiException {
-        Long chatId = 12345L;
-        welcomeService.handleVerTodasLasTareas(chatId);
-
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        verify(telegramClient).execute(argumentCaptor.capture());
-
-        SendMessage capturedMessage = argumentCaptor.getValue();
-        assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getChatId()).isEqualTo(chatId.toString());
-        assertThat(capturedMessage.getText()).contains("Ejecutando comando: ver todas las tareas");
-    }
-
-    @Test
-    void testHandleVerMisTareas() throws TelegramApiException {
-        Long chatId = 12345L;
-        welcomeService.handleVerMisTareas(chatId);
-
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        verify(telegramClient).execute(argumentCaptor.capture());
-
-        SendMessage capturedMessage = argumentCaptor.getValue();
-        assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getChatId()).isEqualTo(chatId.toString());
-        assertThat(capturedMessage.getText()).contains("Ejecutando comando: ver mis tareas");
-    }
-
-    @Test
-    void testShowStartMessageForVerifiedUser() throws TelegramApiException {
-        Long chatId = 12345L;
-        boolean isVerified = true;
-        welcomeService.showStartMessage(chatId, isVerified);
-
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        verify(telegramClient).execute(argumentCaptor.capture());
-
-        SendMessage capturedMessage = argumentCaptor.getValue();
-        assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getChatId()).isEqualTo(chatId.toString());
-        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
-    }
-
-    @Test
-    void testShowStartMessageForUnverifiedUser() throws TelegramApiException {
-        Long chatId = 12345L;
-        boolean isVerified = false;
-        welcomeService.showStartMessage(chatId, isVerified);
-
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        verify(telegramClient).execute(argumentCaptor.capture());
-
-        SendMessage capturedMessage = argumentCaptor.getValue();
-        assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getChatId()).isEqualTo(chatId.toString());
-        assertThat(capturedMessage.getText()).contains("Hola! soy tu asistente de tareas, para verificar el acceso debes introducir tu correo electrónico");
+        assertThat(capturedMessage).contains("¡Bienvenido! Soy el agente de IA Moreno");
     }
 }

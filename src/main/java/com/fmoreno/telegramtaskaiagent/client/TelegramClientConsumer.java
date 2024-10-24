@@ -5,6 +5,7 @@ import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
+import com.fmoreno.telegramtaskaiagent.service.MessageService;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import com.fmoreno.telegramtaskaiagent.service.WelcomeService;
 import jakarta.annotation.PostConstruct;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -34,6 +34,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   final ManagerAgent managerAgent;
   final UserRepository userRepository;
   final WelcomeService welcomeService;
+  final MessageService messageService;
 
   public TelegramClientConsumer(
       TelegramClient telegramClient,
@@ -41,13 +42,15 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
       TaskService taskService,
       ManagerAgent managerAgent,
       UserRepository userRepository,
-      WelcomeService welcomeService) {
+      WelcomeService welcomeService,
+      MessageService messageService) {
     this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
     this.managerAgent = managerAgent;
     this.userRepository = userRepository;
     this.welcomeService = welcomeService;
+    this.messageService = messageService;
   }
 
   @PostConstruct
@@ -61,7 +64,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
             taskService,
             managerAgent,
             userRepository,
-            welcomeService));
+            welcomeService,
+            messageService));
     log.info("Telegram bot initialized");
   }
 
@@ -96,13 +100,13 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     if (email != null) {
       if (isAllowedEmail(email)) {
         createAndSaveNewUser(update, email);
-        sendMessage(chatId, "Has sido verificado y añadido al sistema.");
+        messageService.sendMessage(chatId, "Has sido verificado y añadido al sistema.");
         welcomeService.showStartMessage(chatId);
       } else {
-        sendMessage(chatId, "Tu email no está en la lista de emails permitidos.");
+        messageService.sendMessage(chatId, "Tu email no está en la lista de emails permitidos.");
       }
     } else {
-      sendMessage(chatId, "Por favor, introduce tu email para verificar tu usuario.");
+      messageService.sendMessage(chatId, "Por favor, introduce tu email para verificar tu usuario.");
     }
   }
 
@@ -146,7 +150,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     String chatResponse =
         managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
-    sendMessage(chatId, chatResponse);
+    messageService.sendMessage(chatId, chatResponse);
   }
 
   private String isSpecialCommand(String messageText) {
@@ -174,23 +178,6 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     } catch (Exception e) {
       log.error("Error executing SQL query: {}", e.getMessage());
       return "Error al ejecutar la consulta: " + e.getMessage();
-    }
-  }
-
-  private void sendMessage(Long chatId, String text) {
-    SendMessage message = SendMessage.builder().chatId(chatId).text(text).build();
-    // replace special characters in MarkdownV2
-    message.setText(message.getText().replace("!", "\\!"));
-    message.setText(message.getText().replace(".", "\\."));
-    message.setText(message.getText().replace("-", "\\-"));
-    message.setText(message.getText().replace("(", "\\("));
-    message.setText(message.getText().replace(")", "\\)"));
-
-    message.setParseMode("MarkdownV2");
-    try {
-      telegramClient.execute(message);
-    } catch (TelegramApiException e) {
-      log.error("Error sending message to Telegram", e);
     }
   }
 }
