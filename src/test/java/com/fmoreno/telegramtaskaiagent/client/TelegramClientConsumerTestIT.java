@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.fmoreno.telegramtaskaiagent.persistence.TaskRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.MessageService;
@@ -39,6 +40,9 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     private TaskService taskService;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private ManagerAgent managerAgent;
 
     @Autowired
@@ -71,6 +75,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
+        taskRepository.deleteAll();
     }
 
     @Test
@@ -244,7 +249,11 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).isEqualTo("Tarea creada correctamente.");
+        // check the taskRepository to see if the task was created
+        assertThat(taskRepository.count()).isEqualTo(1);
+        var task = taskRepository.findAll().get(0);
+        assertThat(task.getDescription()).isEqualTo("Nueva tarea");
+        assertThat(task.getAssignee()).isEmpty();
     }
 
     @Test
