@@ -80,13 +80,6 @@ class NL2SQLAgentTestIT extends CommonTestIT {
     }
 
     @Test
-    void testProcessSQLReview() {
-        String sqlQuery = "SELECT * FORM tasks WHERE status = 'Pendiente'";
-        String result = nl2SQLAgent.processSQLReview(sqlQuery);
-        assertThat(result.trim()).startsWith("SELECT * FROM tasks WHERE status = 'Pendiente'");
-    }
-
-    @Test
     void testCreateTaskAssignedToFernando() {
         String input = "Creame una nueva tarea revisar el código";
         String result = nl2SQLAgent.processNaturalLanguageToSQL(input, "Fernando");

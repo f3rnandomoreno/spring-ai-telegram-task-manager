@@ -7,55 +7,43 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.Resource;
+import org.stringtemplate.v4.ST;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Log4j2
 @Service
 public class NL2SQLAgent {
 
   private final ChatClient chatClient;
+  private final ResourceLoader resourceLoader;
+  private final static String NL2SQL_PROMPT_TEMPLATE = "classpath:prompts/nl2sql_prompt.st";
 
-  public NL2SQLAgent(ChatClient chatClient) {
+  public NL2SQLAgent(ChatClient chatClient, ResourceLoader resourceLoader) {
     this.chatClient = chatClient;
+    this.resourceLoader = resourceLoader;
   }
 
   public String processNaturalLanguageToSQL(String input, String assignee) {
-    String prompt =
-        "Eres un asistente que convierte instrucciones en lenguaje natural a consultas SQL para una base de datos de tareas.\n"
-            + "La tabla 'tasks' tiene los siguientes campos:\n"
-            + "- id (INTEGER, clave primaria, autoincremental)\n"
-            + "- description (TEXT)\n"
-            + "- assignee (TEXT)\n"
-            + "- status (TEXT, puede ser 'TODO','BLOCKED','IN_PROGRESS','DONE')\n"
-            + "- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n"
-            + "- updated_at (DATETIME)\n\n"
-            + "Instrucción del usuario: "
-            + input
-            + "\n\n"
-            + "Nombre del usuario: "
-            + assignee
-            + "\n\n"
-            + "Genera una consulta SQL válida basada en esta instrucción. No incluyas explicaciones, solo la consulta SQL.";
+    String templateContent = loadPromptTemplate(NL2SQL_PROMPT_TEMPLATE);
+    ST st = new ST(templateContent);
+    st.add("input", input);
+    st.add("assignee", assignee);
+    String prompt = st.render();
 
     return extractSQLString(generateCompletion(prompt));
   }
 
-  public String processSQLReview(String sqlQuery) {
-    String prompt =
-        "Eres un experto en SQL que verifica y corrige consultas SQL para una base de datos de tareas.\n"
-            + "La tabla 'tasks' tiene los siguientes campos:\n"
-            + "- id (INTEGER, clave primaria, autoincremental)\n"
-            + "- description (TEXT)\n"
-            + "- assignee (TEXT)\n"
-            + "- status (TEXT, puede ser 'Pendiente', 'En Progreso', 'Bloqueada', o 'Completada')\n"
-            + "- created_at (DATETIME, valor por defecto CURRENT_TIMESTAMP)\n\n"
-            + "- updated_at (DATETIME)\n\n"
-            + "Consulta SQL a verificar: "
-            + sqlQuery
-            + "\n\n"
-            + "Verifica que la consulta SQL sea válida y esté bien formada. Si es necesario, corrige la consulta.\n"
-            + "Devuelve solo la consulta SQL corregida, sin explicaciones adicionales.";
-
-    return extractSQLString(generateCompletion(prompt));
+  private String loadPromptTemplate(String resourcePath) {
+    try {
+      Resource resource = resourceLoader.getResource(resourcePath);
+      return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      log.error("Error loading prompt template", e);
+      throw new RuntimeException("Error loading prompt template: " + e.getMessage(), e);
+    }
   }
 
   private String generateCompletion(String promptText) {
