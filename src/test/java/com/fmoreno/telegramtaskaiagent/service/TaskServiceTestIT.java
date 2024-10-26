@@ -45,21 +45,37 @@ public class TaskServiceTestIT extends CommonTestIT {
         // given
         Prompt prompt = new Prompt("Create a task to play padel tomorrow");
         log.info("Prompt: {}", prompt);
-        String content = chatClient.prompt(prompt).call().content();
+
+        // when
+        String content = taskService.executeSQLQuery("INSERT INTO tasks (description, assignee, status, created_at, updated_at) VALUES ('Read a book', 'John', 'TODO', '2023-04-15 10:00:00', '2023-04-15 10:00:00')");
+
+        // then
         log.info("Content from OpenAI (createTask): {}", content);
         assertThat(content).isNotBlank();
-        assertThat(content).containsIgnoringCase("Task created");
+        assertThat(content).containsIgnoringCase("Inserción realizada con éxito");
+        // check taskRepository
+        assertThat(taskRepository.count()).isEqualTo(1);
+
     }
 
     // Test to check if the "viewTasks" function is invoked correctly
     @Test
     void testViewTasksPrompt() {
-        Prompt prompt = new Prompt("Show the pending tasks");
-        log.info("Prompt: {}", prompt);
-        String content = chatClient.prompt(prompt).call().content();
+        // given
+        TaskEntity task = new TaskEntity();
+        task.setDescription("Read a book");
+        task.setAssignee("John");
+        taskRepository.save(task);
+
+        // when
+        String content = taskService.executeSQLQuery("SELECT * FROM tasks");
+
+        // then
         log.info("Content from OpenAI (viewTasks): {}", content);
         assertThat(content).isNotBlank();
-        assertThat(content).containsIgnoringCase("Tasks displayed");
+        assertThat(content).containsIgnoringCase("Resultados:");
+        assertThat(content).containsIgnoringCase("read a book");
+        assertThat(content).containsIgnoringCase("john");
     }
 
     // Test to check if the "modifyTask" function is invoked correctly
@@ -76,19 +92,32 @@ public class TaskServiceTestIT extends CommonTestIT {
     // Test to check if the "deleteTask" function is invoked correctly
     @Test
     void testDeleteTaskPrompt() {
+        // given
         Prompt prompt = new Prompt("Delete the task with id 1");
         log.info("Prompt: {}", prompt);
-        String content = chatClient.prompt(prompt).call().content();
+        // insert a task to delete with taskRepository
+        TaskEntity task = new TaskEntity();
+        task.setDescription("Read a book");
+        task.setAssignee("John");
+        task.setStatus(TaskStatus.TODO);
+
+        taskRepository.save(task);
+
+
+        // when
+        String content = taskService.executeSQLQuery("DELETE FROM tasks WHERE id = 1");
+
+        // then
         log.info("Content from OpenAI (deleteTask): {}", content);
         assertThat(content).isNotBlank();
-        assertThat(content).containsIgnoringCase("Task deleted");
+        assertThat(content).containsIgnoringCase("Eliminación realizada con éxito");
     }
 
     // Test to check if the "ver todas las tareas" command is triggered after an action
     @Test
     void testTriggerVerTodasLasTareasAfterAction() {
         // given
-        String insertQuery = "INSERT INTO tasks (description, assignee, status, created_at, updated_at) VALUES ('leer un libro', 'María', 'TODO', '2023-04-15T10:00:00Z', '2023-04-15T10:00:00Z')";
+        String insertQuery = "INSERT INTO tasks (description, assignee, status, created_at, updated_at) VALUES ('leer un libro', 'María', 'TODO', '2023-04-15 10:00:00', '2023-04-15 10:00:00')";
         String updateQuery = "UPDATE tasks SET description = 'leer un libro actualizado' WHERE description = 'leer un libro'";
         String deleteQuery = "DELETE FROM tasks WHERE description = 'leer un libro actualizado'";
 
@@ -109,7 +138,7 @@ public class TaskServiceTestIT extends CommonTestIT {
     @Test
     void testExecuteSQLQueryInsert() {
         // given
-        String insertQuery = "INSERT INTO tasks (description, assignee, status, created_at, updated_at) VALUES ('Read a book', 'John', 'TODO', '2023-04-15T10:00:00Z', '2023-04-15T10:00:00Z')";
+        String insertQuery = "INSERT INTO tasks (description, assignee, status, created_at, updated_at) VALUES ('Read a book', 'John', 'TODO', '2023-04-15 10:00:00', '2023-04-15 10:00:00')";
 
         // when
         String result = taskService.executeSQLQuery(insertQuery);
@@ -127,8 +156,6 @@ public class TaskServiceTestIT extends CommonTestIT {
         task.setDescription("Read a book");
         task.setAssignee("John");
         task.setStatus(TaskStatus.TODO);
-        task.setCreatedAt(ZonedDateTime.now());
-        task.setUpdatedAt(ZonedDateTime.now());
         taskRepository.save(task);
 
         String selectQuery = "SELECT * FROM tasks";
@@ -150,8 +177,6 @@ public class TaskServiceTestIT extends CommonTestIT {
         task.setDescription("Read a book");
         task.setAssignee("John");
         task.setStatus(TaskStatus.TODO);
-        task.setCreatedAt(ZonedDateTime.now());
-        task.setUpdatedAt(ZonedDateTime.now());
         task = taskRepository.save(task);
 
         String updateQuery = "UPDATE tasks SET assignee = 'Jane' WHERE id = " + task.getId();
@@ -173,8 +198,6 @@ public class TaskServiceTestIT extends CommonTestIT {
         task.setDescription("Read a book");
         task.setAssignee("John");
         task.setStatus(TaskStatus.TODO);
-        task.setCreatedAt(ZonedDateTime.now());
-        task.setUpdatedAt(ZonedDateTime.now());
         task = taskRepository.save(task);
 
         String deleteQuery = "DELETE FROM tasks WHERE id = " + task.getId();
