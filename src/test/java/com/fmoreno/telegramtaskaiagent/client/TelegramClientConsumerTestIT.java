@@ -7,6 +7,7 @@ import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
 import com.fmoreno.telegramtaskaiagent.persistence.TaskRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
+import com.fmoreno.telegramtaskaiagent.persistence.model.TaskEntity;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.fmoreno.telegramtaskaiagent.service.MessageService;
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
@@ -166,7 +167,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("Your email is not in the list of allowed emails.");
+        assertThat(capturedMessage.getText()).contains("Tu email no está en la lista de emails permitidos");
 
         Optional<UserEntity> userEntityOptional = userRepository.findByEmail(email);
         assertThat(userEntityOptional).isNotPresent();
@@ -193,7 +194,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage initialCapturedMessage = argumentCaptor.getValue();
         assertThat(initialCapturedMessage).isNotNull();
-        assertThat(initialCapturedMessage.getText()).contains("Your email is not in the list of allowed emails.");
+        assertThat(initialCapturedMessage.getText()).contains("Tu email no está en la lista de emails permitidos");
 
         Optional<UserEntity> initialUserEntityOptional = userRepository.findByEmail(initialMessage);
         assertThat(initialUserEntityOptional).isNotPresent();
@@ -253,13 +254,13 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         assertThat(taskRepository.count()).isEqualTo(1);
         var task = taskRepository.findAll().get(0);
         assertThat(task.getDescription()).isEqualTo("Nueva tarea");
-        assertThat(task.getAssignee()).isEmpty();
+        assertThat(task.getAssignee()).isBlank();
     }
 
     @Test
     void testUpdateTaskResponse() throws Exception {
         // given
-        String message = "Actualiza la tarea existente";
+        String message = "Actualiza la tarea 1 a tarea actualizada";
         Update update = new Update();
         Message telegramMessage = new Message();
         telegramMessage.setText(message);
@@ -277,6 +278,11 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         userEntity.setUserName(user.getUserName());
         userRepository.save(userEntity);
 
+        // Create a task to update
+        var task = new TaskEntity();
+        task.setDescription("Tarea a actualizar");
+        taskRepository.save(task);
+
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
@@ -286,7 +292,10 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).isEqualTo("Tarea modificada correctamente.");
+        // check the taskRepository to see if the task was updated
+        assertThat(taskRepository.count()).isEqualTo(1);
+        var updatedTask = taskRepository.findAll().get(0);
+        assertThat(updatedTask.getDescription()).containsIgnoringCase("Tarea actualizada");
     }
 
     @Test
