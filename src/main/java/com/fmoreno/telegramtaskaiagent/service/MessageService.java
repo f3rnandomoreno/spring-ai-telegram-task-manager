@@ -6,6 +6,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -29,4 +31,9 @@ public class MessageService {
         }
     }
 
+    public void sendMessagesToMultipleUsers(List<Long> chatIds, String text) {
+        for (Long chatId : chatIds) {
+            sendMessage(chatId, text);
+        }
+    }
 }

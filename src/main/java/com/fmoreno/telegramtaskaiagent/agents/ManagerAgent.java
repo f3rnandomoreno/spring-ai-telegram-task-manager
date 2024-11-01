@@ -20,10 +20,12 @@ public class ManagerAgent {
     private final ChatClient chatClient;
     private final TaskService taskService;
     private final String templateContent;
+    private final NotificationAgent notificationAgent;
 
-    public ManagerAgent(ChatClient chatClient, TaskService taskService) {
+    public ManagerAgent(ChatClient chatClient, TaskService taskService, NotificationAgent notificationAgent) {
         this.chatClient = chatClient;
         this.taskService = taskService;
+        this.notificationAgent = notificationAgent;
         this.templateContent = loadTemplate();
     }
 
@@ -47,7 +49,12 @@ public class ManagerAgent {
         }
         String promptText = buildPrompt(responseMessage, sqlQuery, executionResult, userName);
         log.info("Prompt text: {}", promptText);
-        return generateResponse(promptText);
+        String response = generateResponse(promptText);
+
+        // Call NotificationAgent to generate and send notifications
+        notificationAgent.sendNotification(sqlQuery, executionResult);
+
+        return response;
     }
 
     private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
