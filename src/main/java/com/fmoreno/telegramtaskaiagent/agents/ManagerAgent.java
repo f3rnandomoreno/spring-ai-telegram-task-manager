@@ -1,6 +1,7 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -15,19 +16,13 @@ import java.nio.charset.StandardCharsets;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class ManagerAgent {
 
     private final ChatClient chatClient;
     private final TaskService taskService;
     private final String templateContent;
-    private final NotificationAgent notificationAgent;
 
-    public ManagerAgent(ChatClient chatClient, TaskService taskService, NotificationAgent notificationAgent) {
-        this.chatClient = chatClient;
-        this.taskService = taskService;
-        this.notificationAgent = notificationAgent;
-        this.templateContent = loadTemplate();
-    }
 
     private String loadTemplate() {
         try {
@@ -49,12 +44,7 @@ public class ManagerAgent {
         }
         String promptText = buildPrompt(responseMessage, sqlQuery, executionResult, userName);
         log.info("Prompt text: {}", promptText);
-        String response = generateResponse(promptText);
-
-        // Call NotificationAgent to generate and send notifications
-        notificationAgent.sendNotification(sqlQuery, executionResult);
-
-        return response;
+        return generateResponse(promptText);
     }
 
     private String buildPrompt(String messageText, String sqlQuery, String executionResult, String assignee) {
