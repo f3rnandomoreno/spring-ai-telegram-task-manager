@@ -37,3 +37,13 @@ build/
 /database.db
 /.mvn/wrapper/maven-wrapper.properties
 /test_database.db
+src/main/resources/.env-agentemoreno
+src/main/resources/.env-ailocaltest
+src/main/resources/.env
+src/main/resources/.env-puerto
+src/main/resources/.env-test
+src/main/resources/application-ailocaltest.properties
+src/main/resources/application-puerto.properties
+src/main/resources/application-test.properties
+database2.db
+src/main/resources/application-ailocaltest.properties

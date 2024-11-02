@@ -16,12 +16,17 @@ import java.nio.charset.StandardCharsets;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class ManagerAgent {
 
     private final ChatClient chatClient;
     private final TaskService taskService;
     private final String templateContent;
+
+    public ManagerAgent(ChatClient chatClient, TaskService taskService, String templateContent) {
+        this.chatClient = chatClient;
+        this.taskService = taskService;
+        this.templateContent = templateContent;
+    }
 
 
     private String loadTemplate() {

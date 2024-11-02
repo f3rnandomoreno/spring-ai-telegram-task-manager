@@ -2,22 +2,16 @@ package com.fmoreno.telegramtaskaiagent.agents;
 
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
-import com.fmoreno.telegramtaskaiagent.persistence.model.TaskEntity;
-import com.fmoreno.telegramtaskaiagent.persistence.model.TaskStatus;
 import com.fmoreno.telegramtaskaiagent.service.MessageService;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import com.fmoreno.telegramtaskaiagent.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
