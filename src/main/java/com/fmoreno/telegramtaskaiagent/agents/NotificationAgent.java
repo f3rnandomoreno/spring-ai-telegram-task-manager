@@ -44,9 +44,9 @@ public class NotificationAgent {
   }
 
   public void processUserMessage(
-      String messageText, String sqlQuery, String executionResult, String userName) {
+      String sqlQuery, String executionResult) {
     if (AgentHelper.isInsertOrUpdateOrDelete(sqlQuery)) {
-      String responseMessage = generateResponse(buildPrompt(messageText, sqlQuery, executionResult, userName));
+      String responseMessage = generateResponse(buildPrompt(sqlQuery, executionResult));
       if (responseMessage != null) {
         sendMessageToAllUsers(responseMessage);
       }
@@ -61,12 +61,10 @@ public class NotificationAgent {
   }
 
   private String buildPrompt(
-      String messageText, String sqlQuery, String executionResult, String assignee) {
+       String sqlQuery, String executionResult) {
     ST template = new ST(templateContent);
-    template.add("messageText", messageText);
     template.add("sqlQuery", sqlQuery);
     template.add("executionResult", executionResult);
-    template.add("assignee", assignee);
     return template.render();
   }
 

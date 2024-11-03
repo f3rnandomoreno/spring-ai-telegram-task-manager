@@ -155,6 +155,9 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         managerAgent.processUserMessage(_message, sqlQuery, executionResult, userName);
 
     messageService.sendMessage(chatId, chatResponse);
+
+    notificationAgent.processUserMessage(sqlQuery, executionResult);
+
   }
 
   private String isSpecialCommand(String messageText) {
