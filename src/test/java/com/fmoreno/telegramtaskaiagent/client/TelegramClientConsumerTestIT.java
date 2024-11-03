@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fmoreno.telegramtaskaiagent.CommonTestIT;
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.fmoreno.telegramtaskaiagent.agents.NotificationAgent;
 import com.fmoreno.telegramtaskaiagent.persistence.TaskRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.TaskEntity;
@@ -47,6 +48,9 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     private ManagerAgent managerAgent;
 
     @Autowired
+    private NotificationAgent notificationAgent;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -62,15 +66,15 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
 
     @PostConstruct
     public void init() throws TelegramApiException {
-    telegramClientConsumer =
-        new TelegramClientConsumer(
-            telegramClient,
-            nl2SQLAgent,
-            taskService,
-            managerAgent,
-            userRepository,
-            welcomeService,
-            messageService);
+        telegramClientConsumer = new TelegramClientConsumer(
+                telegramClient,
+                nl2SQLAgent,
+                taskService,
+                managerAgent,
+                userRepository,
+                welcomeService,
+                messageService,
+                notificationAgent);
     }
 
     @BeforeEach
@@ -114,9 +118,9 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         System.out.println("Mensaje capturado: " + capturedMessage.getText());
 
         // Ensure that the message text is as expected
-        //TODO use the RelevancyEvaluator to assert the response
+        // TODO use the RelevancyEvaluator to assert the response
         String expectedResponse = "aquí tienes la lista de tus tareas"; // Reemplaza con la respuesta esperada real
-        assertThat(capturedMessage.getText().toLowerCase()).containsAnyOf(expectedResponse,"lista de tareas");
+        assertThat(capturedMessage.getText().toLowerCase()).containsAnyOf(expectedResponse, "lista de tareas");
     }
 
     @Test
@@ -140,7 +144,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
+        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Soy el agente de IA Moreno");
 
         Optional<UserEntity> userEntityOptional = userRepository.findByEmail(email);
         assertThat(userEntityOptional).isPresent();

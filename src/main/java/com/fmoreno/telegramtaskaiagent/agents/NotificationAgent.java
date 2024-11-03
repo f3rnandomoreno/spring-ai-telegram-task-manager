@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -18,7 +17,6 @@ import org.springframework.util.FileCopyUtils;
 import org.stringtemplate.v4.ST;
 
 @Service
-@RequiredArgsConstructor
 @Log4j2
 public class NotificationAgent {
 
@@ -27,7 +25,14 @@ public class NotificationAgent {
   private final ChatClient chatClient;
   private final String templateContent;
 
-  private String loadTemplate() {
+    public NotificationAgent(UserRepository userRepository, MessageService messageService, ChatClient chatClient) {
+        this.userRepository = userRepository;
+        this.messageService = messageService;
+        this.chatClient = chatClient;
+        this.templateContent = loadTemplate();
+    }
+
+    private String loadTemplate() {
     try {
       ClassPathResource resource = new ClassPathResource("prompts/notification_prompt.st");
       Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8);

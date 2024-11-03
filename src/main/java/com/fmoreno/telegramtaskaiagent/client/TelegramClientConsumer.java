@@ -2,6 +2,7 @@ package com.fmoreno.telegramtaskaiagent.client;
 
 import com.fmoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.fmoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.fmoreno.telegramtaskaiagent.agents.NotificationAgent;
 import com.fmoreno.telegramtaskaiagent.config.AllowedEmailsConfig;
 import com.fmoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.fmoreno.telegramtaskaiagent.persistence.model.UserEntity;
@@ -35,15 +36,16 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   final UserRepository userRepository;
   final WelcomeService welcomeService;
   final MessageService messageService;
+  final NotificationAgent notificationAgent;
 
   public TelegramClientConsumer(
-      TelegramClient telegramClient,
-      NL2SQLAgent nl2SQLAgent,
-      TaskService taskService,
-      ManagerAgent managerAgent,
-      UserRepository userRepository,
-      WelcomeService welcomeService,
-      MessageService messageService) {
+          TelegramClient telegramClient,
+          NL2SQLAgent nl2SQLAgent,
+          TaskService taskService,
+          ManagerAgent managerAgent,
+          UserRepository userRepository,
+          WelcomeService welcomeService,
+          MessageService messageService, NotificationAgent notificationAgent) {
     this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
@@ -51,6 +53,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     this.userRepository = userRepository;
     this.welcomeService = welcomeService;
     this.messageService = messageService;
+    this.notificationAgent = notificationAgent;
   }
 
   @PostConstruct
@@ -65,7 +68,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
             managerAgent,
             userRepository,
             welcomeService,
-            messageService));
+            messageService,
+            notificationAgent));
     log.info("Telegram bot initialized");
   }
 

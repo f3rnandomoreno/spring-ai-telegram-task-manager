@@ -1,7 +1,6 @@
 package com.fmoreno.telegramtaskaiagent.agents;
 
 import com.fmoreno.telegramtaskaiagent.service.TaskService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -22,12 +21,11 @@ public class ManagerAgent {
     private final TaskService taskService;
     private final String templateContent;
 
-    public ManagerAgent(ChatClient chatClient, TaskService taskService, String templateContent) {
+    public ManagerAgent(ChatClient chatClient, TaskService taskService) {
         this.chatClient = chatClient;
         this.taskService = taskService;
-        this.templateContent = templateContent;
+        this.templateContent = loadTemplate();
     }
-
 
     private String loadTemplate() {
         try {
