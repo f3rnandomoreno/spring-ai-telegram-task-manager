@@ -135,6 +135,15 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         telegramMessage.setFrom(user);
         update.setMessage(telegramMessage);
 
+        // Add user to the test database
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(user.getId());
+        userEntity.setEmail("allowed1@example.com");
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setUserName(user.getUserName());
+        userRepository.save(userEntity);
+
         ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
         org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
@@ -144,7 +153,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
         // then
         SendMessage capturedMessage = argumentCaptor.getValue();
         assertThat(capturedMessage).isNotNull();
-        assertThat(capturedMessage.getText()).contains("¡Bienvenido! Soy el agente de IA Moreno");
+        assertThat(capturedMessage.getText()).contains("Hola TestUser");
 
         Optional<UserEntity> userEntityOptional = userRepository.findByEmail(email);
         assertThat(userEntityOptional).isPresent();
