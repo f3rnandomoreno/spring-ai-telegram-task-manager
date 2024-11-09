@@ -49,8 +49,7 @@ public class NL2SQLAgent {
   private String generateCompletion(String promptText) {
     log.info("Generating completion for prompt: {}", promptText);
     try {
-      Prompt prompt = new Prompt(promptText);
-      ChatResponse response = chatClient.prompt(prompt).call().chatResponse();
+      ChatResponse response = chatClient.prompt(new Prompt(promptText)).call().chatResponse();
       String result = response.getResult().getOutput().getContent();
       log.info("Generated completion: {}", result);
       return result;

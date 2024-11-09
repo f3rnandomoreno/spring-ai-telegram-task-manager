@@ -16,6 +16,7 @@ import com.f3rnandomoreno.telegramtaskaiagent.service.MessageService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.TaskService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.WelcomeService;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,6 +39,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Import(RelevancyEvaluatorConfigurations.class)
+@Log4j2
 class TelegramClientConsumerTestIT extends CommonTestIT {
 
   @Value("${telegram.bot.token}")
@@ -395,6 +397,19 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     userEntity.setUserName(user.getUserName());
     userRepository.save(userEntity);
 
+    // create tasks
+    var task1 = new TaskEntity();
+    task1.setDescription("Tarea 1 Description");
+    task1.setAssignee("TestUser");
+    taskRepository.save(task1);
+    var task2 = new TaskEntity();
+    task2.setDescription("Tarea 2 Description");
+    taskRepository.save(task2);
+    var task3 = new TaskEntity();
+    task3.setDescription("Tarea 3 Description");
+    task3.setAssignee("TestUser");
+    taskRepository.save(task3);
+
     ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
     org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
 
@@ -403,14 +418,17 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
 
     // then
     SendMessage capturedMessage = argumentCaptor.getValue();
+    log.info("Mensaje capturado: " + capturedMessage.getText());
     assertThat(capturedMessage).isNotNull();
-    assertThat(capturedMessage.getText()).contains("Hola TestUser");
+    assertThat(capturedMessage.getText()).contains("Tarea 1 Description");
+    assertThat(capturedMessage.getText()).contains("Tarea 2 Description");
+    assertThat(capturedMessage.getText()).contains("Tarea 3 Description");
   }
 
   @Test
-  void testShowStartMessage() throws Exception {
+  void testSelectMyTasks() throws Exception {
     // given
-    String message = "/start";
+    String message = "Muéstrame mis tareas";
     Update update = new Update();
     Message telegramMessage = new Message();
     telegramMessage.setText(message);
@@ -422,11 +440,25 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     // Add user to the test database
     UserEntity userEntity = new UserEntity();
     userEntity.setUserId(user.getId());
+    userEntity.setChatId(1L);
     userEntity.setEmail("allowed1@example.com");
     userEntity.setFirstName(user.getFirstName());
     userEntity.setLastName(user.getLastName());
     userEntity.setUserName(user.getUserName());
     userRepository.save(userEntity);
+
+    // create tasks
+    var task1 = new TaskEntity();
+    task1.setDescription("Tarea 1 Description");
+    task1.setAssignee("TestUser");
+    taskRepository.save(task1);
+    var task2 = new TaskEntity();
+    task2.setDescription("Tarea 2 Description");
+    taskRepository.save(task2);
+    var task3 = new TaskEntity();
+    task3.setDescription("Tarea 3 Description");
+    task3.setAssignee("TestUser");
+    taskRepository.save(task3);
 
     ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
     org.mockito.Mockito.doReturn(null).when(telegramClient).execute(argumentCaptor.capture());
@@ -436,8 +468,11 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
 
     // then
     SendMessage capturedMessage = argumentCaptor.getValue();
+    log.info("Mensaje capturado: " + capturedMessage.getText());
     assertThat(capturedMessage).isNotNull();
-    assertThat(capturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
+    assertThat(capturedMessage.getText()).contains("Tarea 1 Description");
+    assertThat(capturedMessage.getText()).doesNotContain("Tarea 2 Description");
+    assertThat(capturedMessage.getText()).contains("Tarea 3 Description");
   }
 
 }
