@@ -27,4 +27,4 @@ Instrucciones:
 8. Si no hay fecha de actualización en el resultado, no incluyas esa parte.
 9. Asegúrate de que la respuesta sea clara y fácil de leer para el usuario.
 10. Basa tu respuesta ÚNICAMENTE en las tareas presentes en el "Resultado de la ejecución". No inventes ni añades tareas que no estén en ese resultado.
-11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario.
+11. Enriquece el texto con emojis de forma coherente y atractiva para el usuario. No olvides de colocar un emoji después de cada tarea.
