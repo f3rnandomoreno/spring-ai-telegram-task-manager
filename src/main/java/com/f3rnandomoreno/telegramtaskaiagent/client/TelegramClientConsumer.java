@@ -1,7 +1,9 @@
 package com.f3rnandomoreno.telegramtaskaiagent.client;
 
+import com.f3rnandomoreno.telegramtaskaiagent.agents.NotesAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.NotificationAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.service.MessageService;
+import com.f3rnandomoreno.telegramtaskaiagent.service.NotesService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.WelcomeService;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.NL2SQLAgent;
@@ -10,6 +12,7 @@ import com.f3rnandomoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.f3rnandomoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.f3rnandomoreno.telegramtaskaiagent.service.TaskService;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +40,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   final WelcomeService welcomeService;
   final MessageService messageService;
   final NotificationAgent notificationAgent;
+  final NotesService notesService;
+  final NotesAgent notesAgent;
 
   public TelegramClientConsumer(
           TelegramClient telegramClient,
@@ -45,7 +50,10 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
           ManagerAgent managerAgent,
           UserRepository userRepository,
           WelcomeService welcomeService,
-          MessageService messageService, NotificationAgent notificationAgent) {
+          MessageService messageService,
+          NotificationAgent notificationAgent,
+          NotesService notesService,
+          NotesAgent chatService) {
     this.telegramClient = telegramClient;
     this.nl2SQLAgent = nl2SQLAgent;
     this.taskService = taskService;
@@ -54,6 +62,8 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     this.welcomeService = welcomeService;
     this.messageService = messageService;
     this.notificationAgent = notificationAgent;
+    this.notesService = notesService;
+    this.notesAgent = chatService;
   }
 
   @PostConstruct
@@ -69,7 +79,9 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
             userRepository,
             welcomeService,
             messageService,
-            notificationAgent));
+            notificationAgent,
+            notesService,
+            notesAgent));
     log.info("Telegram bot initialized");
   }
 
@@ -138,6 +150,20 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
   private void handleExistingUser(Long userId, long chatId, String userName, String messageText) {
     log.info("Received message from {}: {}", userId, messageText);
 
+    if (messageText.startsWith("/add_note ")) {
+      handleAddNote(chatId, messageText);
+      return;
+    } else if (messageText.equals("/show_notes")) {
+      handleShowNotes(chatId);
+      return;
+    } else if (messageText.startsWith("/show_note ")) {
+      handleShowNote(chatId, messageText);
+      return;
+    } else if (messageText.startsWith("/chat_note ")) {
+      handleChatNote(chatId, messageText);
+      return;
+    }
+
     var _message = isSpecialCommand(messageText);
     if (_message == null) {
       _message = messageText;
@@ -160,6 +186,64 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
 
   }
 
+  private void handleAddNote(long chatId, String messageText) {
+    String[] parts = messageText.split(" ", 3);
+    if (parts.length < 3) {
+      messageService.sendMessage(chatId, "Por favor, proporciona un nombre y contenido para la nota\\.");
+      return;
+    }
+
+    String noteName = parts[1];
+    String content = parts[2];
+    
+    notesService.saveNote(noteName, content);
+    messageService.sendMessage(chatId, String.format("✅ Nota '%s' guardada correctamente", noteName));
+  }
+
+  private void handleShowNotes(long chatId) {
+    List<String> notes = notesService.listNotes();
+    if (notes.isEmpty()) {
+      messageService.sendMessage(chatId, "No hay notas guardadas\\.");
+      return;
+    }
+
+    StringBuilder message = new StringBuilder("📝 *Notas disponibles*:\n");
+    notes.forEach(note -> message.append("• ").append(escapeMarkdown(note)).append("\n"));
+    messageService.sendMessage(chatId, message.toString());
+  }
+
+  private void handleShowNote(long chatId, String messageText) {
+    String[] parts = messageText.split(" ", 2);
+    if (parts.length < 2) {
+      messageService.sendMessage(chatId, "Por favor, especifica el nombre de la nota\\.");
+      return;
+    }
+
+    String noteName = parts[1];
+    String content = notesService.getNoteContent(noteName);
+    
+    if (content == null) {
+      messageService.sendMessage(chatId, "No se encontró la nota especificada\\.");
+      return;
+    }
+    messageService.sendMessage(chatId, content);
+  }
+
+  private void handleChatNote(long chatId, String messageText) {
+    String[] parts = messageText.split(" ", 3);
+    if (parts.length < 3) {
+      messageService.sendMessage(chatId, 
+          "Por favor, especifica el nombre de la nota y tu pregunta\\.");
+      return;
+    }
+
+    String noteName = parts[1];
+    String question = parts[2];
+    
+    String response = notesAgent.chatAboutNote(noteName, question);
+    messageService.sendMessage(chatId, response);
+  }
+
   private String isSpecialCommand(String messageText) {
     switch (messageText) {
       case "/ver_todas_las_tareas":
@@ -168,6 +252,11 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         return "ver mis tareas";
       case "/start":
         return "start";
+      case "/show_notes":
+      case "/add_note":
+      case "/show_note":
+      case "/chat_note":
+        return messageText;
       default:
         return null;
     }
@@ -186,5 +275,26 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
       log.error("Error executing SQL query: {}", e.getMessage());
       return "Error al ejecutar la consulta: " + e.getMessage();
     }
+  }
+
+  private String escapeMarkdown(String text) {
+    return text.replace("_", "\\_")
+              .replace("*", "\\*")
+              .replace("[", "\\[")
+              .replace("]", "\\]")
+              .replace("(", "\\(")
+              .replace(")", "\\)")
+              .replace("~", "\\~")
+              .replace("`", "\\`")
+              .replace(">", "\\>")
+              .replace("#", "\\#")
+              .replace("+", "\\+")
+              .replace("-", "\\-")
+              .replace("=", "\\=")
+              .replace("|", "\\|")
+              .replace("{", "\\{")
+              .replace("}", "\\}")
+              .replace(".", "\\.")
+              .replace("!", "\\!");
   }
 }

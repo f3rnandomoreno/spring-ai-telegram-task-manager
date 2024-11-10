@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.f3rnandomoreno.telegramtaskaiagent.CommonTestIT;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.ManagerAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.NL2SQLAgent;
+import com.f3rnandomoreno.telegramtaskaiagent.agents.NotesAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.NotificationAgent;
 import com.f3rnandomoreno.telegramtaskaiagent.config.RelevancyEvaluatorConfigurations;
 import com.f3rnandomoreno.telegramtaskaiagent.persistence.TaskRepository;
@@ -13,6 +14,7 @@ import com.f3rnandomoreno.telegramtaskaiagent.persistence.UserRepository;
 import com.f3rnandomoreno.telegramtaskaiagent.persistence.model.TaskEntity;
 import com.f3rnandomoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.f3rnandomoreno.telegramtaskaiagent.service.MessageService;
+import com.f3rnandomoreno.telegramtaskaiagent.service.NotesService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.TaskService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.WelcomeService;
 import jakarta.annotation.PostConstruct;
@@ -67,6 +69,12 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
 
   @Autowired RelevancyEvaluator relevancyEvaluator;
 
+  @Autowired
+  NotesService notesService;
+
+  @Autowired
+  NotesAgent notesAgent;
+
   @PostConstruct
   public void init() throws TelegramApiException {
     telegramClientConsumer =
@@ -78,7 +86,9 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
             userRepository,
             welcomeService,
             messageService,
-            notificationAgent);
+            notificationAgent,
+            notesService,
+            notesAgent);
   }
 
   @BeforeEach
