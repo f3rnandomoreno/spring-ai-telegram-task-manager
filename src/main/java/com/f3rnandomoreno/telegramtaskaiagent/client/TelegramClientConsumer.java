@@ -156,7 +156,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
     } else if (messageText.equals("/show_notes")) {
       handleShowNotes(chatId);
       return;
-    } else if (messageText.startsWith("/show_note ")) {
+    } else if (messageText.startsWith("/show ")) {
       handleShowNote(chatId, messageText);
       return;
     } else if (messageText.startsWith("/chat ")) {
@@ -254,7 +254,7 @@ public class TelegramClientConsumer implements LongPollingSingleThreadUpdateCons
         return "start";
       case "/show_notes":
       case "/add_note":
-      case "/show_note":
+      case "/show":
       case "/chat":
         return messageText;
       default:
