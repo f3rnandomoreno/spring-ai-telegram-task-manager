@@ -19,6 +19,24 @@ public class TaskService {
         log.info("Executing SQL Query: {}", sqlQuery);
         String lowerCaseQuery = sqlQuery.toLowerCase().trim();
         
+        if (lowerCaseQuery.contains("delete")) {
+            // Convertir DELETE en UPDATE para borrado lógico
+            sqlQuery = sqlQuery.replaceAll(
+                "(?i)DELETE FROM tasks WHERE",
+                "UPDATE tasks SET removed = TRUE WHERE"
+            );
+        } else if (lowerCaseQuery.contains("select")) {
+            // Modificar SELECT para ignorar registros borrados lógicamente
+            if (!lowerCaseQuery.contains("where")) {
+                sqlQuery += " WHERE removed = FALSE";
+            } else {
+                sqlQuery = sqlQuery.replaceFirst(
+                    "(?i)WHERE",
+                    "WHERE removed = FALSE AND"
+                );
+            }
+        }
+        
         if (lowerCaseQuery.startsWith("select")) {
             List<Map<String, Object>> results = jdbcTemplate.queryForList(sqlQuery);
             return formatSelectResults(results);
