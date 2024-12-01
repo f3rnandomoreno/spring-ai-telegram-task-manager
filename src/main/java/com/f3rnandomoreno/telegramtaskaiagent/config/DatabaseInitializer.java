@@ -21,11 +21,11 @@ public class DatabaseInitializer {
     public void init() {
         log.info("Verificando estructura de la tabla tasks...");
         addRemovedColumnIfNotExists();
+        addCompletedDateColumnIfNotExists();
     }
 
     private void addRemovedColumnIfNotExists() {
         try {
-            // Verificamos si la columna existe usando DatabaseMetaData
             boolean columnExists = columnExists("tasks", "removed");
             
             if (!columnExists) {
@@ -39,6 +39,25 @@ public class DatabaseInitializer {
             }
         } catch (Exception e) {
             log.error("Error al verificar/añadir la columna 'removed': {}", e.getMessage());
+            throw new RuntimeException("Error al inicializar la base de datos", e);
+        }
+    }
+
+    private void addCompletedDateColumnIfNotExists() {
+        try {
+            boolean columnExists = columnExists("tasks", "completed_date");
+            
+            if (!columnExists) {
+                log.info("Añadiendo columna 'completed_date' a la tabla tasks...");
+                jdbcTemplate.execute(
+                    "ALTER TABLE tasks ADD COLUMN completed_date DATETIME"
+                );
+                log.info("Columna 'completed_date' añadida correctamente");
+            } else {
+                log.info("La columna 'completed_date' ya existe en la tabla tasks");
+            }
+        } catch (Exception e) {
+            log.error("Error al verificar/añadir la columna 'completed_date': {}", e.getMessage());
             throw new RuntimeException("Error al inicializar la base de datos", e);
         }
     }
