@@ -1,7 +1,27 @@
 package com.f3rnandomoreno.telegramtaskaiagent.client;
 
+import java.util.Collections;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.ai.evaluation.EvaluationRequest;
+import org.springframework.ai.evaluation.EvaluationResponse;
+import org.springframework.ai.evaluation.RelevancyEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import com.f3rnandomoreno.telegramtaskaiagent.CommonTestIT;
 import com.f3rnandomoreno.telegramtaskaiagent.agents.ManagerAgent;
@@ -15,28 +35,9 @@ import com.f3rnandomoreno.telegramtaskaiagent.persistence.model.UserEntity;
 import com.f3rnandomoreno.telegramtaskaiagent.service.MessageService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.TaskService;
 import com.f3rnandomoreno.telegramtaskaiagent.service.WelcomeService;
+
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.ai.evaluation.EvaluationRequest;
-import org.springframework.ai.evaluation.EvaluationResponse;
-import org.springframework.ai.evaluation.RelevancyEvaluator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.chat.Chat;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.util.Collections;
-import java.util.Optional;
 
 @Import(RelevancyEvaluatorConfigurations.class)
 @Log4j2
@@ -235,7 +236,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     // then
     SendMessage allowedCapturedMessage = argumentCaptor.getValue();
     assertThat(allowedCapturedMessage).isNotNull();
-    assertThat(allowedCapturedMessage.getText()).contains("¡Bienvenido! Estas son tus opciones:");
+    assertThat(allowedCapturedMessage.getText()).contains("¡Bienvenido\\! Soy el agente de IA Moreno");
 
     Optional<UserEntity> allowedUserEntityOptional = userRepository.findByEmail(allowedEmail);
     assertThat(allowedUserEntityOptional).isPresent();
@@ -244,7 +245,7 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
   @Test
   void testCreateTaskResponse() throws Exception {
     // given
-    String message = "Crea una nueva tarea";
+    String message = "Crea una tarea revisar documentación";
     Update update = new Update();
     Message telegramMessage = new Message();
     telegramMessage.setText(message);
@@ -275,8 +276,8 @@ class TelegramClientConsumerTestIT extends CommonTestIT {
     // check the taskRepository to see if the task was created
     assertThat(taskRepository.count()).isEqualTo(1);
     var task = taskRepository.findAll().get(0);
-    assertThat(task.getDescription()).isEqualTo("Nueva tarea");
-    assertThat(task.getAssignee()).isBlank();
+    assertThat(task.getDescription()).isEqualTo("revisar documentación");
+    assertThat(task.getAssignee()).isEqualTo("TestUser");
     // TODO check that notification is sent to all users
   }
 
